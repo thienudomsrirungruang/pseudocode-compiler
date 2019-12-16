@@ -8,7 +8,6 @@
                | <unaryop> [<whitespace>] <expression>
 <whitespace> ::= {" " | "\t"}
 <newline> ::= "\n"
-<literal> ::= <integer_lit>
-<integer_lit> ::= "{(0-9)}"
+<literal> ::= "{0-9}"
 <comment> ::= "//(.*+)"
 <unaryop> ::= "-" | "+"

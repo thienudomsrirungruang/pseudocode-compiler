@@ -121,9 +121,10 @@ class Expression(Component):
             self.components.append(expr)
         else:
             self.type = "literal"
-            literal = Literal() # Literal
-            literal.parse(tokens)
-            self.components.append(literal)
+            token = tokens.popleft()
+            if not isinstance(token, Literal):
+                raise ParseError("Expected Literal")
+            self.components.append(token)
     
     def generate_code(self, indents=0):
         if self.type == "unary_op":
@@ -184,21 +185,7 @@ class OutputKeyword(Keyword):
         super().__init__()
         self.regex = re.compile("^(OUTPUT)((?:.|\n)*)$")
 
-class Literal(Component):
-    def __init__(self):
-        super().__init__()
-    
-    def parse(self, tokens):
-        token = tokens.popleft() # IntegerLiteral
-        if not isinstance(token, IntegerLiteral):
-            raise ParseError("Expected integer literal")
-        self.components.append(token)
-    
-    def generate_code(self, indents=0):
-        output = self.components[0].generate_code()
-        return output
-
-class IntegerLiteral(Literal, Token):
+class Literal(Token):
     def __init__(self):
         super().__init__()
         self.regex = re.compile("^([0-9]+)((?:.|\n)*)$")
@@ -209,4 +196,4 @@ class IntegerLiteral(Literal, Token):
         output += ")"
         return output
 
-TOKEN_LIST = [Comment, LineSep, Whitespace, OutputKeyword, IntegerLiteral, UnaryOp] # leftmost takes priority
+TOKEN_LIST = [Comment, LineSep, Whitespace, OutputKeyword, Literal, UnaryOp] # leftmost takes priority
