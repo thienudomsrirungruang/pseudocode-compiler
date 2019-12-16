@@ -121,17 +121,17 @@ class Expression(Component):
     def parse(self, tokens):
         next_tok = tokens[0]
         if isinstance(next_tok, UnaryOp):
-            self.type = "unary_op"
+            self.exprtype = "unary_op"
             token = tokens.popleft() # UnaryOp
             self.components.append(token)
             expr = Expression() # Expression
             expr.parse(tokens)
-            if expr.get_type() != "INTEGER":
-                raise TypeError(f"UnaryOp expected INTEGER, got {expr.get_type()}")
+            if expr.get_type() not in ("INTEGER", "REAL"):
+                raise TypeError(f"UnaryOp expected INTEGER or REAL, got {expr.get_type()}")
             self.type = expr.get_type()
             self.components.append(expr)
         else:
-            self.type = "literal"
+            self.exprtype = "literal"
             token = tokens.popleft()
             if not isinstance(token, Literal):
                 raise ParseError("Expected Literal")
@@ -139,13 +139,13 @@ class Expression(Component):
             self.components.append(token)
     
     def generate_code(self, indents=0):
-        if self.type == "unary_op":
+        if self.exprtype == "unary_op":
             output = self.components[1].generate_code()
             if self.components[0].value == "-":
                 output += ".negative()"
             elif self.components[0].value == "+":
                 output += ".positive()"
-        elif self.type == "literal":
+        elif self.exprtype == "literal":
             output = self.components[0].generate_code()
         return output
 
@@ -200,16 +200,23 @@ class OutputKeyword(Keyword):
 class Literal(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^([0-9]+)((?:.|\n)*)$")
+        self.regex = re.compile("^([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+|TRUE|FALSE|\".*\"|'.')((?:.|\n)*)$")
     
     def get_type(self):
-        type_matchers = {"^([0-9]+)$", "INTEGER"}
+        type_matchers = {
+            "^[0-9]+$": "INTEGER",
+            "^[0-9]*\.[0-9]+|[0-9]+\.[0-9]*$": "REAL",
+            "^TRUE|FALSE$": "BOOLEAN",
+            "^\".*\"$": "STRING",
+            "^'.'$": "CHAR"
+        }
         for i, j in type_matchers.items():
             if re.search(re.compile(i), self.value):
                 return j
 
     def generate_code(self, indents=0):
-        output = "INTEGER("
+        output = self.get_type()
+        output += "("
         output += self.value
         output += ")"
         return output

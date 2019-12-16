@@ -8,6 +8,8 @@
                | <unaryop> [<whitespace>] <expression>
 <whitespace> ::= {" " | "\t"}
 <newline> ::= "\n"
-<literal> ::= "{0-9}"
+<literal> ::= "(0-9)+"
+            | "(0-9)+\.{0.9}"
+            | ".*"
 <comment> ::= "//(.*+)"
 <unaryop> ::= "-" | "+"
