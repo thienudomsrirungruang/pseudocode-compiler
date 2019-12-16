@@ -1,0 +1,10 @@
+; Written in EBNF (Extended Backus-Naur Form)
+
+<program> ::= {<statement>}
+<statement> ::= [<whitespace>] "OUTPUT" <whitespace> <expression> [<whitespace>] <newline>
+              | [<whitespace>] <newline>
+<expression> ::= <literal>
+<whitespace> ::= {" " | "\t"}
+<newline> ::= "\n"
+<literal> ::= <integer_lit>
+<integer_lit> ::= {(0-9)}
