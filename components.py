@@ -100,7 +100,7 @@ class OutputStatement(Statement):
         output = "    " * indents
         output += "print("
         output += self.components[0].generate_code()
-        output += ".value)\r\n"
+        output += ".value)\n"
         return output
 
 class Expression(Component):
