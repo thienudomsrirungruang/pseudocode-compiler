@@ -66,11 +66,14 @@ class Statement(Component):
             output_statement = OutputStatement()
             output_statement.parse(tokens)
             self.components.append(output_statement)
-        elif not isinstance(next_tok, Whitespace) and not isinstance(next_tok, LineSep):
-            raise ParseError("Expected OutputKeyword or Whitespace or LineSep")
+        elif not isinstance(next_tok, Whitespace) and not isinstance(next_tok, LineSep) and not isinstance(next_tok, Comment):
+            raise ParseError("Expected OutputKeyword or Whitespace or LineSep or Comment")
         token = tokens[0]
         if isinstance(token, Whitespace):
             tokens.popleft() # Whitespace
+        token = tokens[0]
+        if isinstance(token, Comment):
+            tokens.popleft() # Comment
         token = tokens.popleft() # LineSep
         if not isinstance(token, LineSep):
             raise ParseError("Expected LineSep")
@@ -135,6 +138,11 @@ class Token(Component):
     def __str__(self):
         return f"{self.__class__.__name__} value {repr(self.value)}"
 
+class Comment(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^(\/\/(?:.*))((?:.|\n)*)$")
+
 class LineSep(Token):
     def __init__(self):
         super().__init__()
@@ -179,4 +187,4 @@ class IntegerLiteral(Literal, Token):
         output += ")"
         return output
 
-TOKEN_LIST = [LineSep, Whitespace, OutputKeyword, IntegerLiteral] # leftmost takes priority
+TOKEN_LIST = [Comment, LineSep, Whitespace, OutputKeyword, IntegerLiteral] # leftmost takes priority
