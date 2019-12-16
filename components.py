@@ -5,6 +5,10 @@ class ParseError(Exception):
     def __init__(self, message):
         self.message = message
 
+class TypeError(Exception):
+    def __init__(self, message):
+        self.message = message
+
 class Component:
     def __init__(self):
         self.components = []
@@ -109,7 +113,11 @@ class OutputStatement(Statement):
 class Expression(Component):
     def __init__(self):
         super().__init__()
+        self.type = None
     
+    def get_type(self):
+        return self.type
+
     def parse(self, tokens):
         next_tok = tokens[0]
         if isinstance(next_tok, UnaryOp):
@@ -118,12 +126,16 @@ class Expression(Component):
             self.components.append(token)
             expr = Expression() # Expression
             expr.parse(tokens)
+            if expr.get_type() != "INTEGER":
+                raise TypeError(f"UnaryOp expected INTEGER, got {expr.get_type()}")
+            self.type = expr.get_type()
             self.components.append(expr)
         else:
             self.type = "literal"
             token = tokens.popleft()
             if not isinstance(token, Literal):
                 raise ParseError("Expected Literal")
+            self.type = token.get_type()
             self.components.append(token)
     
     def generate_code(self, indents=0):
@@ -190,6 +202,12 @@ class Literal(Token):
         super().__init__()
         self.regex = re.compile("^([0-9]+)((?:.|\n)*)$")
     
+    def get_type(self):
+        type_matchers = {"^([0-9]+)$", "INTEGER"}
+        for i, j in type_matchers.items():
+            if re.search(re.compile(i), self.value):
+                return j
+
     def generate_code(self, indents=0):
         output = "INTEGER("
         output += self.value
