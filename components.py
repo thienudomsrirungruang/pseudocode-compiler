@@ -111,12 +111,29 @@ class Expression(Component):
         super().__init__()
     
     def parse(self, tokens):
-        literal = Literal()
-        literal.parse(tokens)
-        self.components.append(literal)
+        next_tok = tokens[0]
+        if isinstance(next_tok, UnaryOp):
+            self.type = "unary_op"
+            token = tokens.popleft() # UnaryOp
+            self.components.append(token)
+            expr = Expression() # Expression
+            expr.parse(tokens)
+            self.components.append(expr)
+        else:
+            self.type = "literal"
+            literal = Literal() # Literal
+            literal.parse(tokens)
+            self.components.append(literal)
     
     def generate_code(self, indents=0):
-        output = self.components[0].generate_code()
+        if self.type == "unary_op":
+            output = self.components[1].generate_code()
+            if self.components[0].value == "-":
+                output += ".negative()"
+            elif self.components[0].value == "+":
+                output += ".positive()"
+        elif self.type == "literal":
+            output = self.components[0].generate_code()
         return output
 
 class Token(Component):
@@ -153,6 +170,11 @@ class Whitespace(Token):
         super().__init__()
         self.regex = re.compile("^((?: |\t))((?:.|\n)*)$")
 
+class UnaryOp(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^(\+|-)((?:.|\n)*)$")
+
 class Keyword(Token):
     def __init__(self):
         super().__init__()
@@ -179,7 +201,7 @@ class Literal(Component):
 class IntegerLiteral(Literal, Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^((?:\+|-)?[0-9]+)((?:.|\n)*)$")
+        self.regex = re.compile("^([0-9]+)((?:.|\n)*)$")
     
     def generate_code(self, indents=0):
         output = "INTEGER("
@@ -187,4 +209,4 @@ class IntegerLiteral(Literal, Token):
         output += ")"
         return output
 
-TOKEN_LIST = [Comment, LineSep, Whitespace, OutputKeyword, IntegerLiteral] # leftmost takes priority
+TOKEN_LIST = [Comment, LineSep, Whitespace, OutputKeyword, IntegerLiteral, UnaryOp] # leftmost takes priority

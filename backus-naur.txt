@@ -5,8 +5,10 @@
               | [<whitespace>] [<comment>] <newline>
 <outputstatement> ::= "OUTPUT" <whitespace> <expression>
 <expression> ::= <literal>
+               | <unaryop> [<whitespace>] <expression>
 <whitespace> ::= {" " | "\t"}
 <newline> ::= "\n"
 <literal> ::= <integer_lit>
 <integer_lit> ::= "{(0-9)}"
 <comment> ::= "//(.*+)"
+<unaryop> ::= "-" | "+"
