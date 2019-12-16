@@ -1,4 +1,4 @@
-integer_def = """class INTEGER:
+header = """class INTEGER:
     def __init__(self, value):
         self.value = value
     def copy(self):

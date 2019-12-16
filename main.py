@@ -43,5 +43,5 @@ if __name__ == '__main__':
     program.parse(tokens)
     print(program.get_graph_string())
     generated_code = program.generate_code()
-    full_code = snippets.integer_def + generated_code
+    full_code = snippets.header + generated_code
     write_to_file(os.path.abspath(os.path.join(__file__, '../output.py')), full_code)
