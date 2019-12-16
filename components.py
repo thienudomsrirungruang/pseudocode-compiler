@@ -54,6 +54,25 @@ class Statement(Component):
         token = tokens[0]
         if isinstance(token, Whitespace):
             tokens.popleft() # Whitespace
+        next_tok = tokens[0] # OutputKeyword OR Whitespace OR LineSep
+        if isinstance(next_tok, OutputKeyword):
+            output_statement = OutputStatement()
+            output_statement.parse(tokens)
+            self.components.append(output_statement)
+        elif not isinstance(next_tok, Whitespace) and not isinstance(next_tok, LineSep):
+            raise ParseError("Expected OutputKeyword or Whitespace or LineSep")
+        token = tokens[0]
+        if isinstance(token, Whitespace):
+            tokens.popleft() # Whitespace
+        token = tokens.popleft() # LineSep
+        if not isinstance(token, LineSep):
+            raise ParseError("Expected LineSep")
+
+class OutputStatement(Statement):
+    def __init__(self):
+        super().__init__()
+    
+    def parse(self, tokens):
         token = tokens.popleft() # OutputKeyword
         if not isinstance(token, OutputKeyword):
             raise ParseError("Expected OutputKeyword")
@@ -63,12 +82,6 @@ class Statement(Component):
         expression = Expression() # Expression
         expression.parse(tokens)
         self.components.append(expression)
-        token = tokens[0]
-        if isinstance(token, Whitespace):
-            tokens.popleft() # Whitespace
-        token = tokens.popleft() # LineSep
-        if not isinstance(token, LineSep):
-            raise ParseError("Expected LineSep")
 
 class Expression(Component):
     def __init__(self):

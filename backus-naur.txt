@@ -1,8 +1,9 @@
 ; Written in EBNF (Extended Backus-Naur Form)
 
 <program> ::= {<statement>}
-<statement> ::= [<whitespace>] "OUTPUT" <whitespace> <expression> [<whitespace>] <newline>
+<statement> ::= [<whitespace>] <outputstatement> [<whitespace>] <newline>
               | [<whitespace>] <newline>
+<outputstatement> ::= "OUTPUT" <whitespace> <expression>
 <expression> ::= <literal>
 <whitespace> ::= {" " | "\t"}
 <newline> ::= "\n"
