@@ -1,6 +1,8 @@
 import os
-import components
 import collections
+
+import components
+import snippets
 
 class LexError(Exception):
     def __init__(self, message):
@@ -40,4 +42,6 @@ if __name__ == '__main__':
     program = components.Program()
     program.parse(tokens)
     print(program.get_graph_string())
-    # write_to_file(os.path.abspath(os.path.join(__file__, '../output.py')), contents)
+    generated_code = program.generate_code()
+    full_code = snippets.integer_def + generated_code
+    write_to_file(os.path.abspath(os.path.join(__file__, '../output.py')), full_code)

@@ -15,7 +15,8 @@ class Component:
     def parse(self, tokens):
         pass
 
-    def generate_code(self):
+    # third step: generates python code.
+    def generate_code(self, indents=0):
         pass
 
     def get_graph_string(self, has_next=False, line_list=None):
@@ -45,6 +46,12 @@ class Program(Component):
             statement = Statement()
             statement.parse(tokens)
             self.components.append(statement)
+    
+    def generate_code(self, indents=0):
+        output = "    " * indents
+        for component in self.components:
+            output += component.generate_code(indents)
+        return output
 
 class Statement(Component):
     def __init__(self):
@@ -67,6 +74,12 @@ class Statement(Component):
         token = tokens.popleft() # LineSep
         if not isinstance(token, LineSep):
             raise ParseError("Expected LineSep")
+    
+    def generate_code(self, indents=0):
+        output = "    " * indents
+        for component in self.components:
+            output += component.generate_code(indents)
+        return output
 
 class OutputStatement(Statement):
     def __init__(self):
@@ -82,6 +95,13 @@ class OutputStatement(Statement):
         expression = Expression() # Expression
         expression.parse(tokens)
         self.components.append(expression)
+    
+    def generate_code(self, indents=0):
+        output = "    " * indents
+        output += "print("
+        output += self.components[0].generate_code()
+        output += ".value)\r\n"
+        return output
 
 class Expression(Component):
     def __init__(self):
@@ -91,6 +111,10 @@ class Expression(Component):
         literal = Literal()
         literal.parse(tokens)
         self.components.append(literal)
+    
+    def generate_code(self, indents=0):
+        output = self.components[0].generate_code()
+        return output
 
 class Token(Component):
     def __init__(self):
@@ -139,10 +163,20 @@ class Literal(Component):
         if not isinstance(token, IntegerLiteral):
             raise ParseError("Expected integer literal")
         self.components.append(token)
+    
+    def generate_code(self, indents=0):
+        output = self.components[0].generate_code()
+        return output
 
 class IntegerLiteral(Literal, Token):
     def __init__(self):
         super().__init__()
         self.regex = re.compile("^((?:\+|-)?[0-9]+)((?:.|\n)*)$")
+    
+    def generate_code(self, indents=0):
+        output = "INTEGER("
+        output += self.value
+        output += ")"
+        return output
 
 TOKEN_LIST = [LineSep, Whitespace, OutputKeyword, IntegerLiteral] # leftmost takes priority
