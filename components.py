@@ -102,7 +102,7 @@ class OutputStatement(Statement):
         expression = Expression() # Expression
         expression.parse(tokens)
         self.components.append(expression)
-    
+
     def generate_code(self, indents=0):
         output = "    " * indents
         output += "print("
@@ -115,36 +115,131 @@ class Expression(Component):
         super().__init__()
         self.type = None
     
+    #TODO: Types
     def get_type(self):
         return self.type
 
     def parse(self, tokens):
+        term = Term() # Term
+        term.parse(tokens)
+        self.components.append(term)
         next_tok = tokens[0]
-        if isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
-            self.exprtype = "unary_op"
+        if isinstance(next_tok, Whitespace):
+            token = tokens.popleft()
+            next_tok = tokens[0]
+        while isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
+            next_tok = tokens[0]
+            if isinstance(next_tok, Whitespace):
+                token = tokens.popleft()
+            binaryop = BinaryOp() # BinaryOp
+            binaryop.parse(tokens)
+            self.components.append(binaryop)
+            next_tok = tokens[0]
+            if isinstance(next_tok, Whitespace):
+                token = tokens.popleft()
+            term = Term() # Term
+            term.parse(tokens)
+            self.components.append(term)
+        # if isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
+        #     self.exprtype = "unary_op"
+        #     uop = UnaryOp() # UnaryOp
+        #     uop.parse(tokens)
+        #     self.components.append(uop)
+        #     expr = Expression() # Expression
+        #     expr.parse(tokens)
+        #     if expr.get_type() not in ("INTEGER", "REAL"):
+        #         raise TypeError(f"UnaryOp expected INTEGER or REAL, got {expr.get_type()}")
+        #     self.type = expr.get_type()
+        #     self.components.append(expr)
+        # else:
+        #     self.exprtype = "literal"
+        #     lit = LiteralComponent()
+        #     lit.parse(tokens)
+        #     self.type = lit.get_type()
+        #     self.components.append(lit)
+    
+    def generate_code(self, indents=0):
+        # TODO
+        pass
+        # if self.exprtype == "unary_op":
+        #     output = self.components[1].generate_code()
+        #     output += self.components[0].generate_code()
+        # elif self.exprtype == "literal":
+        #     output = self.components[0].generate_code()
+        # return output
+
+class Term(Component):
+    def __init__(self):
+        super().__init__()
+        self.type = None
+    
+    def parse(self, tokens):
+        factor = Factor() # Factor
+        factor.parse(tokens)
+        self.components.append(factor)
+        next_tok = tokens[0]
+        if isinstance(next_tok, Whitespace):
+            token = tokens.popleft()
+            next_tok = tokens[0]
+        while isinstance(next_tok, Multiply) or isinstance(next_tok, Divide):
+            next_tok = tokens[0]
+            if isinstance(next_tok, Whitespace):
+                token = tokens.popleft()
+            binaryop = BinaryOp() # BinaryOp
+            binaryop.parse(tokens)
+            self.components.append(binaryop)
+            next_tok = tokens[0]
+            if isinstance(next_tok, Whitespace):
+                token = tokens.popleft()
+            factor = Factor() # Factor
+            factor.parse(tokens)
+            self.components.append(factor)
+
+    def generate_code(self, indents=0):
+        pass
+
+class Factor(Component):
+    def __init__(self):
+        super().__init__()
+        self.type = None
+        self.exprtype = None
+    
+    def parse(self, tokens):
+        next_tok = tokens[0]
+        if isinstance(next_tok, LeftBracket):
+            tokens.popleft()
+            next_tok = tokens[0]
+            if isinstance(next_tok, Whitespace):
+                tokens.popleft()
+            expr = Expression()
+            expr.parse(tokens)
+            next_tok = tokens[0]
+            if isinstance(next_tok, Whitespace):
+                tokens.popleft()
+            token = tokens.popleft()
+            if not isinstance(token, RightBracket):
+                raise ParseError("Expected RightBracket")
+            self.components.append(expr)
+            self.exprtype = "bracket"
+        elif isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
             uop = UnaryOp() # UnaryOp
             uop.parse(tokens)
             self.components.append(uop)
-            expr = Expression() # Expression
-            expr.parse(tokens)
-            if expr.get_type() not in ("INTEGER", "REAL"):
-                raise TypeError(f"UnaryOp expected INTEGER or REAL, got {expr.get_type()}")
-            self.type = expr.get_type()
-            self.components.append(expr)
+            factor = Factor() # Factor
+            factor.parse(tokens)
+            # if factor.get_type() not in ("INTEGER", "REAL"):
+            #     raise TypeError(f"UnaryOp expected INTEGER or REAL, got {factor.get_type()}")
+            # self.type = factor.get_type()
+            self.components.append(factor)
+            self.exprtype = "unary_op"
         else:
-            self.exprtype = "literal"
             lit = LiteralComponent()
             lit.parse(tokens)
-            self.type = lit.get_type()
             self.components.append(lit)
-    
+            self.exprtype = "lit"
+
     def generate_code(self, indents=0):
-        if self.exprtype == "unary_op":
-            output = self.components[1].generate_code()
-            output += self.components[0].generate_code()
-        elif self.exprtype == "literal":
-            output = self.components[0].generate_code()
-        return output
+        pass
 
 class UnaryOp(Component):
     def __init__(self):
@@ -164,6 +259,25 @@ class UnaryOp(Component):
         elif self.value == "-":
             output += ".negative()"
         return output
+
+class BinaryOp(Component):
+    def __init__(self):
+        super().__init__()
+        self.value = ""
+    
+    def parse(self, tokens):
+        token = tokens.popleft()
+        self.value = token.value
+    
+    def generate_code(self, indents=0):
+        # Code is generated in the parent.
+        pass
+
+    def __repr__(self):
+        return f"{self.__class__.__name__} value {repr(self.value)}"
+
+    def __str__(self):
+        return f"{self.__class__.__name__} value {repr(self.value)}"
 
 class LiteralComponent(Component):
     def __init__(self):

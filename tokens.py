@@ -44,6 +44,26 @@ class Minus(Token):
         super().__init__()
         self.regex = re.compile("^(-)((?:.|\n)*)$")
 
+class Multiply(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^(\*)((?:.|\n)*)$")
+
+class Divide(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^(\/)((?:.|\n)*)$")
+
+class LeftBracket(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^(\())((?:.|\n)*)$")
+
+class RightBracket(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^(\))((?:.|\n)*)$")
+
 class Keyword(Token):
     def __init__(self):
         super().__init__()
@@ -59,4 +79,4 @@ class Literal(Token):
         self.regex = re.compile("^([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+|TRUE|FALSE|\".*\"|'.')((?:.|\n)*)$")
 
 
-TOKEN_LIST = [Comment, LineSep, Whitespace, OutputKeyword, Literal, Plus, Minus] # leftmost takes priority
+TOKEN_LIST = [Comment, LineSep, Whitespace, OutputKeyword, Literal, Multiply, Divide, Plus, Minus] # leftmost takes priority

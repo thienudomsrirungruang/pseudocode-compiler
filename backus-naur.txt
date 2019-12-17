@@ -4,8 +4,11 @@
 <statement> ::= [<whitespace>] <outputstatement> [<whitespace>] [<comment>] <newline>
               | [<whitespace>] [<comment>] <newline>
 <outputstatement> ::= "OUTPUT" <whitespace> <expression>
-<expression> ::= <literal>
-               | <unaryop> [<whitespace>] <expression>
+<expression> ::= <term> [<whitespace>] {"+"|"-" [<whitespace>] <term>}
+<term> ::= <factor> [<whitespace>] {"*"|"/" [<whitespace>] <factor>}
+<factor> ::= "(" [<whitespace>] <exp> [<whitespace>] ")"
+           | <unaryop> [<whitespace>] <factor>
+           | <literal>
 <whitespace> ::= {" " | "\t"}
 <newline> ::= "\n"
 <literal> ::= "(0-9)+"
