@@ -114,8 +114,7 @@ class Expression(Component):
     def __init__(self):
         super().__init__()
         self.type = None
-    
-    #TODO: Types
+
     def get_type(self):
         return self.type
 
@@ -123,11 +122,14 @@ class Expression(Component):
         term = Term() # Term
         term.parse(tokens)
         self.components.append(term)
+        self.type = term.get_type()
         next_tok = tokens[0]
         if isinstance(next_tok, Whitespace):
             token = tokens.popleft()
             next_tok = tokens[0]
         while isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
+            if self.type not in ("INTEGER", "REAL"):
+                raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
             next_tok = tokens[0]
             if isinstance(next_tok, Whitespace):
                 token = tokens.popleft()
@@ -140,48 +142,42 @@ class Expression(Component):
             term = Term() # Term
             term.parse(tokens)
             self.components.append(term)
-        # if isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
-        #     self.exprtype = "unary_op"
-        #     uop = UnaryOp() # UnaryOp
-        #     uop.parse(tokens)
-        #     self.components.append(uop)
-        #     expr = Expression() # Expression
-        #     expr.parse(tokens)
-        #     if expr.get_type() not in ("INTEGER", "REAL"):
-        #         raise TypeError(f"UnaryOp expected INTEGER or REAL, got {expr.get_type()}")
-        #     self.type = expr.get_type()
-        #     self.components.append(expr)
-        # else:
-        #     self.exprtype = "literal"
-        #     lit = LiteralComponent()
-        #     lit.parse(tokens)
-        #     self.type = lit.get_type()
-        #     self.components.append(lit)
+            if term.type not in ("INTEGER", "REAL"):
+                raise ParseError(f"INTEGER or REAL expected, got {term.type} instead")
+            if term.type == "REAL":
+                self.type = "REAL"
+            next_tok = tokens[0]
     
     def generate_code(self, indents=0):
         # TODO
         pass
-        # if self.exprtype == "unary_op":
-        #     output = self.components[1].generate_code()
-        #     output += self.components[0].generate_code()
-        # elif self.exprtype == "literal":
-        #     output = self.components[0].generate_code()
-        # return output
+
+    def __repr__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
+
+    def __str__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
 
 class Term(Component):
     def __init__(self):
         super().__init__()
         self.type = None
     
+    def get_type(self):
+        return self.type
+
     def parse(self, tokens):
         factor = Factor() # Factor
         factor.parse(tokens)
         self.components.append(factor)
+        self.type = factor.get_type()
         next_tok = tokens[0]
         if isinstance(next_tok, Whitespace):
             token = tokens.popleft()
             next_tok = tokens[0]
         while isinstance(next_tok, Multiply) or isinstance(next_tok, Divide):
+            if self.type not in ("INTEGER", "REAL"):
+                raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
             next_tok = tokens[0]
             if isinstance(next_tok, Whitespace):
                 token = tokens.popleft()
@@ -194,9 +190,20 @@ class Term(Component):
             factor = Factor() # Factor
             factor.parse(tokens)
             self.components.append(factor)
+            if factor.type not in ("INTEGER", "REAL"):
+                raise ParseError(f"INTEGER or REAL expected, got {factor.type} instead")
+            if factor.type == "REAL":
+                self.type = "REAL"
+            next_tok = tokens[0]
 
     def generate_code(self, indents=0):
         pass
+    
+    def __repr__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
+
+    def __str__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
 
 class Factor(Component):
     def __init__(self):
@@ -204,6 +211,9 @@ class Factor(Component):
         self.type = None
         self.exprtype = None
     
+    def get_type(self):
+        return self.type
+
     def parse(self, tokens):
         next_tok = tokens[0]
         if isinstance(next_tok, LeftBracket):
@@ -221,6 +231,7 @@ class Factor(Component):
                 raise ParseError("Expected RightBracket")
             self.components.append(expr)
             self.exprtype = "bracket"
+            self.type = expr.get_type()
         elif isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
             uop = UnaryOp() # UnaryOp
             uop.parse(tokens)
@@ -232,14 +243,22 @@ class Factor(Component):
             # self.type = factor.get_type()
             self.components.append(factor)
             self.exprtype = "unary_op"
+            self.type = factor.get_type()
         else:
             lit = LiteralComponent()
             lit.parse(tokens)
             self.components.append(lit)
             self.exprtype = "lit"
+            self.type = lit.get_type()
 
     def generate_code(self, indents=0):
         pass
+    
+    def __repr__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
+
+    def __str__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
 
 class UnaryOp(Component):
     def __init__(self):
@@ -259,6 +278,12 @@ class UnaryOp(Component):
         elif self.value == "-":
             output += ".negative()"
         return output
+
+    def __repr__(self):
+        return f"{self.__class__.__name__} value {repr(self.value)}"
+
+    def __str__(self):
+        return f"{self.__class__.__name__} value {repr(self.value)}"
 
 class BinaryOp(Component):
     def __init__(self):
@@ -311,7 +336,7 @@ class LiteralComponent(Component):
         return output
 
     def __repr__(self):
-        return f"{self.__class__.__name__} value {repr(self.value)}"
+        return f"{self.__class__.__name__} value {repr(self.value)} type {self.get_type()}"
 
     def __str__(self):
-        return f"{self.__class__.__name__} value {repr(self.value)}"
+        return f"{self.__class__.__name__} value {repr(self.value)} type {self.get_type()}"

@@ -1,6 +1,11 @@
 header = \
-"""class INTEGER:
+"""class _PrimitiveType:
+    pass
+
+class INTEGER(_PrimitiveType):
     def __init__(self, value):
+        if isinstance(value, _PrimitiveType):
+            value = value.value
         if isinstance(value, float):
             if float % 1 == 0:
                 value = int(value)
@@ -13,8 +18,10 @@ header = \
         return INTEGER(-self.value)
     def positive(self):
         return INTEGER(self.value)
-class REAL:
+class REAL(_PrimitiveType):
     def __init__(self, value):
+        if isinstance(value, _PrimitiveType):
+            value = value.value
         if isinstance(value, int):
             value = float(value)
         if not isinstance(value, float):
@@ -26,15 +33,19 @@ class REAL:
         return REAL(-self.value)
     def positive(self):
         return REAL(self.value)
-class STRING:
+class STRING(_PrimitiveType):
     def __init__(self, value):
+        if isinstance(value, _PrimitiveType):
+            value = value.value
         if not isinstance(value, str):
             raise TypeError(f"STRING expected, got {value} instead")
         self.value = value
     def copy(self):
         return STRING(self.value)
-class CHAR:
+class CHAR(_PrimitiveType):
     def __init__(self, value):
+        if isinstance(value, _PrimitiveType):
+            value = value.value
         if not isinstance(value, str):
             raise TypeError(f"STRING expected, got {value} instead")
         if len(value) != 1:
@@ -42,8 +53,10 @@ class CHAR:
         self.value = value
     def copy(self):
         return CHAR(self.value)
-class BOOLEAN:
+class BOOLEAN(_PrimitiveType):
     def __init__(self, value):
+        if isinstance(value, _PrimitiveType):
+            value = value.value
         if not isinstance(value, bool):
             raise TypeError(f"BOOLEAN expected, got {value} instead")
         self.value = value
