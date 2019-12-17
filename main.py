@@ -3,6 +3,7 @@ import collections
 
 import components
 import snippets
+import tokens
 
 class LexError(Exception):
     def __init__(self, message):
@@ -19,28 +20,28 @@ def write_to_file(filename, contents):
 # first step: converts pseudocode into a queue of components.Token()
 # raises LexError if it cannot be tokenised.
 def tokenise(code):
-    tokens = collections.deque()
+    token_list = collections.deque()
     while len(code) > 0:
-        for token in components.TOKEN_LIST:
+        for token in tokens.TOKEN_LIST:
             t = token()
             results = t.check_exists(code)
             if results[0]:
-                tokens.append(t)
+                token_list.append(t)
                 code = results[1]
                 break
         else:
             raise LexError(f"Couldn't lex code near:\n{code[:50] if len(code) > 50 else code}")
-    return tokens
+    return token_list
 
 if __name__ == '__main__':
     contents = read_from_file(os.path.abspath(os.path.join(__file__, '../input.pdc')))
     # sanitise input so there's always a newline
     if contents[-1] != "\n":
         contents += "\n"
-    tokens = tokenise(contents)
-    print(tokens)
+    token_list = tokenise(contents)
+    print(token_list)
     program = components.Program()
-    program.parse(tokens)
+    program.parse(token_list)
     print(program.get_graph_string())
     generated_code = program.generate_code()
     full_code = snippets.header + generated_code
