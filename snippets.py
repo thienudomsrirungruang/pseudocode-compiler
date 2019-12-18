@@ -24,26 +24,36 @@ class INTEGER(_PrimitiveType):
         elif isinstance(other, REAL):
             return REAL(self.value + other.value)
         else:
-            raise TypeError("INTEGER or REAL expected, got type(other) instead")
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
     def subtract(self, other):
         if isinstance(other, INTEGER):
             return INTEGER(self.value - other.value)
         elif isinstance(other, REAL):
             return REAL(self.value - other.value)
         else:
-            raise TypeError("INTEGER or REAL expected, got type(other) instead")
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
     def multiply(self, other):
         if isinstance(other, INTEGER):
             return INTEGER(self.value * other.value)
         elif isinstance(other, REAL):
             return REAL(self.value * other.value)
         else:
-            raise TypeError("INTEGER or REAL expected, got type(other) instead")
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
     def divide(self, other):
         if isinstance(other, INTEGER) or isinstance(other, REAL):
             return REAL(self.value / other.value)
         else:
-            raise TypeError("INTEGER or REAL expected, got type(other) instead")
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
+    def mod(self, other):
+        if isinstance(other, INTEGER):
+            return INTEGER(self.value % other.value)
+        else:
+            raise TypeError(f"INTEGER expected, got {type(other)} instead")
+    def div(self, other):
+        if isinstance(other, INTEGER):
+            return INTEGER(self.value // other.value)
+        else:
+            raise TypeError(f"INTEGER expected, got {type(other)} instead")
 class REAL(_PrimitiveType):
     def __init__(self, value):
         if isinstance(value, _PrimitiveType):
@@ -63,22 +73,22 @@ class REAL(_PrimitiveType):
         if isinstance(other, INTEGER) or isinstance(other, REAL):
             return REAL(self.value + other.value)
         else:
-            raise TypeError("INTEGER or REAL expected, got type(other) instead")
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
     def subtract(self, other):
         if isinstance(other, INTEGER) or isinstance(other, REAL):
             return REAL(self.value - other.value)
         else:
-            raise TypeError("INTEGER or REAL expected, got type(other) instead")
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
     def multiply(self, other):
         if isinstance(other, INTEGER) or isinstance(other, REAL):
             return REAL(self.value * other.value)
         else:
-            raise TypeError("INTEGER or REAL expected, got type(other) instead")
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
     def divide(self, other):
         if isinstance(other, INTEGER) or isinstance(other, REAL):
             return REAL(self.value / other.value)
         else:
-            raise TypeError("INTEGER or REAL expected, got type(other) instead")
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
 class STRING(_PrimitiveType):
     def __init__(self, value):
         if isinstance(value, _PrimitiveType):

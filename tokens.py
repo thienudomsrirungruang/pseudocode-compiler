@@ -49,6 +49,16 @@ class Divide(Token):
         super().__init__()
         self.regex = re.compile("^\s*(\/)((?:.|\n)*)$")
 
+class Mod(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s*( MOD )((?:.|\n)*)$")
+
+class Div(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s*( DIV )((?:.|\n)*)$")
+
 class LeftBracket(Token):
     def __init__(self):
         super().__init__()
@@ -74,4 +84,4 @@ class Literal(Token):
         self.regex = re.compile("^\s*([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+|TRUE|FALSE|\".*\"|'.')((?:.|\n)*)$")
 
 
-TOKEN_LIST = [Comment, LineSep, OutputKeyword, Literal, Multiply, Divide, Plus, Minus, LeftBracket, RightBracket] # leftmost takes priority
+TOKEN_LIST = [Comment, LineSep, OutputKeyword, Literal, Div, Mod, Multiply, Divide, Plus, Minus, LeftBracket, RightBracket] # leftmost takes priority

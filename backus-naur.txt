@@ -5,7 +5,7 @@
               |  [<comment>] <newline>
 <outputstatement> ::= "OUTPUT " <expression>
 <expression> ::= <term> {"+"|"-"  <term>}
-<term> ::= <factor> {"*"|"/"  <factor>}
+<term> ::= <factor> {"*"|"/"|"MOD"|"DIV"  <factor>}
 <factor> ::= "(" <exp> ")"
            | <unaryop> <factor>
            | <literal>

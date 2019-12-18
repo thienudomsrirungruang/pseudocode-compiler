@@ -125,9 +125,9 @@ class Expression(Component):
             term = Term() # Term
             term.parse(tokens)
             self.components.append(term)
-            if term.type not in ("INTEGER", "REAL"):
+            if term.get_type() not in ("INTEGER", "REAL"):
                 raise ParseError(f"INTEGER or REAL expected, got {term.type} instead")
-            if term.type == "REAL":
+            if term.get_type() == "REAL":
                 self.type = "REAL"
             next_tok = tokens[0]
     
@@ -165,9 +165,13 @@ class Term(Component):
         self.components.append(factor)
         self.type = factor.get_type()
         next_tok = tokens[0]
-        while isinstance(next_tok, Multiply) or isinstance(next_tok, Divide):
-            if self.type not in ("INTEGER", "REAL"):
-                raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
+        while isinstance(next_tok, Multiply) or isinstance(next_tok, Divide) or isinstance(next_tok, Div) or isinstance(next_tok, Mod):
+            if isinstance(next_tok, Multiply) or isinstance(next_tok, Divide):
+                if self.type not in ("INTEGER", "REAL"):
+                    raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
+            else:
+                if self.type not in ("INTEGER"):
+                    raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
             binaryop = BinaryOp() # BinaryOp
             binaryop.parse(tokens)
             if binaryop.value == "/":
@@ -177,10 +181,14 @@ class Term(Component):
             factor.parse(tokens)
             print(factor.get_graph_string())
             self.components.append(factor)
-            if factor.type not in ("INTEGER", "REAL"):
-                raise ParseError(f"INTEGER or REAL expected, got {factor.type} instead")
-            if factor.type == "REAL":
-                self.type = "REAL"
+            if binaryop.value in ("/", "*"):
+                if factor.get_type() not in ("INTEGER", "REAL"):
+                    raise ParseError(f"INTEGER or REAL expected, got {factor.type} instead")
+                if factor.type == "REAL":
+                    self.type = "REAL"
+            else:
+                if factor.get_type() != "INTEGER":
+                    raise ParseError(f"INTEGER expected, got {factor.type} instead")
             next_tok = tokens[0]
 
     def generate_code(self, indents=0):
@@ -191,8 +199,16 @@ class Term(Component):
                 output += ".multiply("
                 output += self.components[i+1].generate_code()
                 output += ")"
-            elif self.components[i].value == "/": # BinaryOp
+            elif self.components[i].value == "/":
                 output += ".divide("
+                output += self.components[i+1].generate_code()
+                output += ")"
+            elif self.components[i].value == " DIV ":
+                output += ".div("
+                output += self.components[i+1].generate_code()
+                output += ")"
+            elif self.components[i].value == " MOD ":
+                output += ".mod("
                 output += self.components[i+1].generate_code()
                 output += ")"
         return output
