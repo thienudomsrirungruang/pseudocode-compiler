@@ -149,8 +149,19 @@ class Expression(Component):
             next_tok = tokens[0]
     
     def generate_code(self, indents=0):
-        # TODO
-        pass
+        output = "("
+        output += self.components[0].generate_code()
+        for i in range(1, len(self.components), 2):
+            if self.components[i].value == "+": # BinaryOp
+                output += ".add("
+                output += self.components[i+1].generate_code()
+                output += ")"
+            elif self.components[i].value == "-": # BinaryOp
+                output += ".subtract("
+                output += self.components[i+1].generate_code()
+                output += ")"
+        output += ")"
+        return output
 
     def __repr__(self):
         return f"{self.__class__.__name__} type {self.get_type()}"
@@ -183,12 +194,15 @@ class Term(Component):
                 token = tokens.popleft()
             binaryop = BinaryOp() # BinaryOp
             binaryop.parse(tokens)
+            if binaryop.value == "/":
+                self.type == "REAL"
             self.components.append(binaryop)
             next_tok = tokens[0]
             if isinstance(next_tok, Whitespace):
                 token = tokens.popleft()
             factor = Factor() # Factor
             factor.parse(tokens)
+            print(factor.get_graph_string())
             self.components.append(factor)
             if factor.type not in ("INTEGER", "REAL"):
                 raise ParseError(f"INTEGER or REAL expected, got {factor.type} instead")
@@ -197,7 +211,19 @@ class Term(Component):
             next_tok = tokens[0]
 
     def generate_code(self, indents=0):
-        pass
+        output = "("
+        output += self.components[0].generate_code()
+        for i in range(1, len(self.components), 2):
+            if self.components[i].value == "*": # BinaryOp
+                output += ".multiply("
+                output += self.components[i+1].generate_code()
+                output += ")"
+            elif self.components[i].value == "/": # BinaryOp
+                output += ".divide("
+                output += self.components[i+1].generate_code()
+                output += ")"
+        output += ")"
+        return output
     
     def __repr__(self):
         return f"{self.__class__.__name__} type {self.get_type()}"
@@ -238,9 +264,6 @@ class Factor(Component):
             self.components.append(uop)
             factor = Factor() # Factor
             factor.parse(tokens)
-            # if factor.get_type() not in ("INTEGER", "REAL"):
-            #     raise TypeError(f"UnaryOp expected INTEGER or REAL, got {factor.get_type()}")
-            # self.type = factor.get_type()
             self.components.append(factor)
             self.exprtype = "unary_op"
             self.type = factor.get_type()
@@ -252,13 +275,26 @@ class Factor(Component):
             self.type = lit.get_type()
 
     def generate_code(self, indents=0):
-        pass
+        if self.exprtype == "bracket":
+            output = "("
+            output += self.components[0].generate_code()
+            output += ")"
+            return output
+        elif self.exprtype == "unary_op":
+            output = "("
+            output += self.components[1].generate_code()
+            output += self.components[0].generate_code()
+            output += ")"
+            return output
+        elif self.exprtype == "lit":
+            output = self.components[0].generate_code()
+            return output
     
     def __repr__(self):
-        return f"{self.__class__.__name__} type {self.get_type()}"
+        return f"{self.__class__.__name__} type {self.get_type()} exprtype {self.exprtype}"
 
     def __str__(self):
-        return f"{self.__class__.__name__} type {self.get_type()}"
+        return f"{self.__class__.__name__} type {self.get_type()} exprtype {self.exprtype}"
 
 class UnaryOp(Component):
     def __init__(self):
