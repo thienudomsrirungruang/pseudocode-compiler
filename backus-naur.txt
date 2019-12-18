@@ -3,10 +3,14 @@
 <program> ::= {<statement>}
 <statement> ::=  <outputstatement> [<comment>] <newline>
               |  [<comment>] <newline>
-<outputstatement> ::= "OUTPUT " <expression>
-<expression> ::= <term> {"+"|"-"  <term>}
+<outputstatement> ::= "OUTPUT " <logical-or-exp>
+<logical-or-exp> ::= <logical-and-exp> {|| <logical-and-exp}
+<logical-and-exp> ::= <equality-exp> { "&&" <equality-exp> }
+<equality-exp> ::= <relational-exp> { "!=" | "==" <relational-exp> }
+<relational-exp> ::= <additive-exp> { "<" | ">" | "<=" | ">=" <additive-exp> }
+<additive-exp> ::= <term> {"+"|"-"  <term>}
 <term> ::= <factor> {"*"|"/"|"MOD"|"DIV"  <factor>}
-<factor> ::= "(" <exp> ")"
+<factor> ::= "(" <logical-or-exp> ")"
            | <unaryop> <factor>
            | <literal>
 <newline> ::= "\n"

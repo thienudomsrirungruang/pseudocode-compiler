@@ -91,7 +91,7 @@ class OutputStatement(Statement):
         token = tokens.popleft() # OutputKeyword
         if not isinstance(token, OutputKeyword):
             raise ParseError("Expected OutputKeyword")
-        expression = Expression() # Expression
+        expression = AdditiveExpression() # Expression
         expression.parse(tokens)
         self.components.append(expression)
 
@@ -102,7 +102,7 @@ class OutputStatement(Statement):
         output += ".value)\n"
         return output
 
-class Expression(Component):
+class AdditiveExpression(Component):
     def __init__(self):
         super().__init__()
         self.type = None
@@ -232,7 +232,7 @@ class Factor(Component):
         next_tok = tokens[0]
         if isinstance(next_tok, LeftBracket):
             tokens.popleft()
-            expr = Expression()
+            expr = AdditiveExpression()
             expr.parse(tokens)
             token = tokens.popleft()
             if not isinstance(token, RightBracket):

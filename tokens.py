@@ -29,6 +29,51 @@ class LineSep(Token):
         super().__init__()
         self.regex = re.compile("^\s*(\n)((?:.|\n)*)$")
 
+class LogicalAnd(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s*( AND )((?:.|\n)*)$")
+
+class LogicalOr(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s*( OR )((?:.|\n)*)$")
+
+class LogicalNot(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s*( NOT )((?:.|\n)*)$")
+
+class Equal(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s*(=)((?:.|\n)*)$")
+
+class NotEqual(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s*(<>)((?:.|\n)*)$")
+
+class LessThan(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s*(<)((?:.|\n)*)$")
+        
+class MoreThan(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s*(>)((?:.|\n)*)$")
+
+class LessThanEqual(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s*(<=)((?:.|\n)*)$")
+
+class MoreThanEqual(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s*(>=)((?:.|\n)*)$")
+
 class Plus(Token):
     def __init__(self):
         super().__init__()
@@ -84,4 +129,8 @@ class Literal(Token):
         self.regex = re.compile("^\s*([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+|TRUE|FALSE|\".*\"|'.')((?:.|\n)*)$")
 
 
-TOKEN_LIST = [Comment, LineSep, OutputKeyword, Literal, Div, Mod, Multiply, Divide, Plus, Minus, LeftBracket, RightBracket] # leftmost takes priority
+TOKEN_LIST = [Comment, LineSep, OutputKeyword, Literal, 
+                LogicalAnd, LogicalOr, LogicalNot, Div, Mod,
+                Multiply, Divide, Plus, Minus,
+                NotEqual, LessThanEqual, MoreThanEqual, LessThan, MoreThan, Equal,
+                LeftBracket, RightBracket] # leftmost takes priority
