@@ -30,6 +30,7 @@ def tokenise(code):
                 code = results[1]
                 break
         else:
+            print(f"Current token list: {token_list}")
             raise LexError(f"Couldn't lex code near:\n{code[:50] if len(code) > 50 else code}")
     return token_list
 

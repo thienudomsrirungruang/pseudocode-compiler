@@ -63,18 +63,13 @@ class Statement(Component):
     
     def parse(self, tokens):
         token = tokens[0]
-        if isinstance(token, Whitespace):
-            tokens.popleft() # Whitespace
-        next_tok = tokens[0] # OutputKeyword OR Whitespace OR LineSep
+        next_tok = tokens[0] # OutputKeyword OR LineSep
         if isinstance(next_tok, OutputKeyword):
             output_statement = OutputStatement()
             output_statement.parse(tokens)
             self.components.append(output_statement)
-        elif not isinstance(next_tok, Whitespace) and not isinstance(next_tok, LineSep) and not isinstance(next_tok, Comment):
-            raise ParseError("Expected OutputKeyword or Whitespace or LineSep or Comment")
-        token = tokens[0]
-        if isinstance(token, Whitespace):
-            tokens.popleft() # Whitespace
+        elif not isinstance(next_tok, LineSep) and not isinstance(next_tok, Comment):
+            raise ParseError("Expected OutputKeyword or LineSep or Comment")
         token = tokens[0]
         if isinstance(token, Comment):
             tokens.popleft() # Comment
@@ -96,9 +91,6 @@ class OutputStatement(Statement):
         token = tokens.popleft() # OutputKeyword
         if not isinstance(token, OutputKeyword):
             raise ParseError("Expected OutputKeyword")
-        token = tokens.popleft() # Whitespace
-        if not isinstance(token, Whitespace):
-            raise ParseError("Expected Whitespace")
         expression = Expression() # Expression
         expression.parse(tokens)
         self.components.append(expression)
@@ -124,21 +116,12 @@ class Expression(Component):
         self.components.append(term)
         self.type = term.get_type()
         next_tok = tokens[0]
-        if isinstance(next_tok, Whitespace):
-            token = tokens.popleft()
-            next_tok = tokens[0]
         while isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
             if self.type not in ("INTEGER", "REAL"):
                 raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
-            next_tok = tokens[0]
-            if isinstance(next_tok, Whitespace):
-                token = tokens.popleft()
             binaryop = BinaryOp() # BinaryOp
             binaryop.parse(tokens)
             self.components.append(binaryop)
-            next_tok = tokens[0]
-            if isinstance(next_tok, Whitespace):
-                token = tokens.popleft()
             term = Term() # Term
             term.parse(tokens)
             self.components.append(term)
@@ -149,7 +132,7 @@ class Expression(Component):
             next_tok = tokens[0]
     
     def generate_code(self, indents=0):
-        output = "("
+        output = ""
         output += self.components[0].generate_code()
         for i in range(1, len(self.components), 2):
             if self.components[i].value == "+": # BinaryOp
@@ -160,7 +143,6 @@ class Expression(Component):
                 output += ".subtract("
                 output += self.components[i+1].generate_code()
                 output += ")"
-        output += ")"
         return output
 
     def __repr__(self):
@@ -183,23 +165,14 @@ class Term(Component):
         self.components.append(factor)
         self.type = factor.get_type()
         next_tok = tokens[0]
-        if isinstance(next_tok, Whitespace):
-            token = tokens.popleft()
-            next_tok = tokens[0]
         while isinstance(next_tok, Multiply) or isinstance(next_tok, Divide):
             if self.type not in ("INTEGER", "REAL"):
                 raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
-            next_tok = tokens[0]
-            if isinstance(next_tok, Whitespace):
-                token = tokens.popleft()
             binaryop = BinaryOp() # BinaryOp
             binaryop.parse(tokens)
             if binaryop.value == "/":
                 self.type == "REAL"
             self.components.append(binaryop)
-            next_tok = tokens[0]
-            if isinstance(next_tok, Whitespace):
-                token = tokens.popleft()
             factor = Factor() # Factor
             factor.parse(tokens)
             print(factor.get_graph_string())
@@ -211,7 +184,7 @@ class Term(Component):
             next_tok = tokens[0]
 
     def generate_code(self, indents=0):
-        output = "("
+        output = ""
         output += self.components[0].generate_code()
         for i in range(1, len(self.components), 2):
             if self.components[i].value == "*": # BinaryOp
@@ -222,7 +195,6 @@ class Term(Component):
                 output += ".divide("
                 output += self.components[i+1].generate_code()
                 output += ")"
-        output += ")"
         return output
     
     def __repr__(self):
@@ -244,14 +216,8 @@ class Factor(Component):
         next_tok = tokens[0]
         if isinstance(next_tok, LeftBracket):
             tokens.popleft()
-            next_tok = tokens[0]
-            if isinstance(next_tok, Whitespace):
-                tokens.popleft()
             expr = Expression()
             expr.parse(tokens)
-            next_tok = tokens[0]
-            if isinstance(next_tok, Whitespace):
-                tokens.popleft()
             token = tokens.popleft()
             if not isinstance(token, RightBracket):
                 raise ParseError("Expected RightBracket")
@@ -276,15 +242,11 @@ class Factor(Component):
 
     def generate_code(self, indents=0):
         if self.exprtype == "bracket":
-            output = "("
-            output += self.components[0].generate_code()
-            output += ")"
+            output = self.components[0].generate_code()
             return output
         elif self.exprtype == "unary_op":
-            output = "("
-            output += self.components[1].generate_code()
+            output = self.components[1].generate_code()
             output += self.components[0].generate_code()
-            output += ")"
             return output
         elif self.exprtype == "lit":
             output = self.components[0].generate_code()

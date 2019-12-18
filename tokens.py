@@ -22,47 +22,42 @@ class Token:
 class Comment(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^(\/\/(?:.*))((?:.|\n)*)$")
+        self.regex = re.compile("^\s*(\/\/(?:.*))((?:.|\n)*)$")
 
 class LineSep(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^(\n)((?:.|\n)*)$")
-
-class Whitespace(Token):
-    def __init__(self):
-        super().__init__()
-        self.regex = re.compile("^((?: |\t))((?:.|\n)*)$")
+        self.regex = re.compile("^\s*(\n)((?:.|\n)*)$")
 
 class Plus(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^(\+)((?:.|\n)*)$")
+        self.regex = re.compile("^\s*(\+)((?:.|\n)*)$")
 
 class Minus(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^(-)((?:.|\n)*)$")
+        self.regex = re.compile("^\s*(-)((?:.|\n)*)$")
 
 class Multiply(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^(\*)((?:.|\n)*)$")
+        self.regex = re.compile("^\s*(\*)((?:.|\n)*)$")
 
 class Divide(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^(\/)((?:.|\n)*)$")
+        self.regex = re.compile("^\s*(\/)((?:.|\n)*)$")
 
 class LeftBracket(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^(\())((?:.|\n)*)$")
+        self.regex = re.compile("^\s*(\()((?:.|\n)*)$")
 
 class RightBracket(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^(\))((?:.|\n)*)$")
+        self.regex = re.compile("^\s*(\))((?:.|\n)*)$")
 
 class Keyword(Token):
     def __init__(self):
@@ -71,12 +66,12 @@ class Keyword(Token):
 class OutputKeyword(Keyword):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^(OUTPUT)((?:.|\n)*)$")
+        self.regex = re.compile("^\s*(OUTPUT )((?:.|\n)*)$")
 
 class Literal(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+|TRUE|FALSE|\".*\"|'.')((?:.|\n)*)$")
+        self.regex = re.compile("^\s*([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+|TRUE|FALSE|\".*\"|'.')((?:.|\n)*)$")
 
 
-TOKEN_LIST = [Comment, LineSep, Whitespace, OutputKeyword, Literal, Multiply, Divide, Plus, Minus] # leftmost takes priority
+TOKEN_LIST = [Comment, LineSep, OutputKeyword, Literal, Multiply, Divide, Plus, Minus, LeftBracket, RightBracket] # leftmost takes priority
