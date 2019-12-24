@@ -1,0 +1,62 @@
+// Comments and blank lines
+
+// /// ////
+
+////
+
+
+
+// Basic Types + OUTPUT
+OUTPUT 2 // inline comment
+OUTPUT 3.2
+OUTPUT 2.
+OUTPUT .4
+OUTPUT -4
+OUTPUT -7.3
+
+OUTPUT "hello world"
+OUTPUT ""
+OUTPUT 'a'
+OUTPUT '2'
+
+OUTPUT TRUE
+OUTPUT FALSE
+
+// Unary Operations
+OUTPUT -3
+OUTPUT +4
+OUTPUT NOT TRUE
+OUTPUT NOT FALSE
+OUTPUT +++++--+3
+OUTPUT ---+3
+OUTPUT NOT NOT NOT TRUE
+
+// Binary Operations
+OUTPUT 2+3
+OUTPUT 2 + 3
+OUTPUT 2     + 2
+OUTPUT 4 - 2
+OUTPUT 3 MOD 2
+OUTPUT 8 DIV 3
+OUTPUT +-3 * -2
+
+// BIDMAS
+OUTPUT 5 / 2 * 3
+OUTPUT 8 + 2 - 3 + 4
+OUTPUT 6 - 3 - ((2 - 3) * -4)
+OUTPUT 3 * 4 / 2 - 3
+OUTPUT 3 - 4 * 2 / 3
+OUTPUT -4 --4 * (2 * 3)
+
+// Binary Boolean Operations
+OUTPUT 3 > 2
+OUTPUT 3 >= 2
+OUTPUT 3 >= 3
+OUTPUT 3 > 3
+OUTPUT 3 < 2
+OUTPUT 3 <= 4
+OUTPUT 3 <= 3
+OUTPUT 4>3
+OUTPUT 9>   2
+OUTPUT 4 < 2 OR 3 < 10
+OUTPUT 4 < 2 OR 3 < 2
