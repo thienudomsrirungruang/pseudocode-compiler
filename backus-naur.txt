@@ -4,7 +4,7 @@
 <statement> ::=  <outputstatement> [<comment>] <newline>
               |  [<comment>] <newline>
 <outputstatement> ::= "OUTPUT " <logical-or-exp>
-<logical-or-exp> ::= <logical-and-exp> {|| <logical-and-exp}
+<logical-or-exp> ::= <logical-and-exp> { "||" <logical-and-exp}
 <logical-and-exp> ::= <equality-exp> { "&&" <equality-exp> }
 <equality-exp> ::= <relational-exp> { "!=" | "==" <relational-exp> }
 <relational-exp> ::= <additive-exp> { "<" | ">" | "<=" | ">=" <additive-exp> }

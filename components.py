@@ -91,7 +91,7 @@ class OutputStatement(Statement):
         token = tokens.popleft() # OutputKeyword
         if not isinstance(token, OutputKeyword):
             raise ParseError("Expected OutputKeyword")
-        expression = AdditiveExpression() # Expression
+        expression = LogicalOrExpression() # Expression
         expression.parse(tokens)
         self.components.append(expression)
 
@@ -100,6 +100,169 @@ class OutputStatement(Statement):
         output += "print("
         output += self.components[0].generate_code()
         output += ".value)\n"
+        return output
+
+class LogicalOrExpression(Component):
+    def __init__(self):
+        super().__init__()
+        self.type = None
+    
+    def get_type(self):
+        return self.type
+    
+    def parse(self, tokens):
+        logical_and_exp = LogicalAndExpression() # LogicalAndExpression
+        logical_and_exp.parse(tokens)
+        self.components.append(logical_and_exp)
+        self.type = logical_and_exp.get_type()
+        next_tok = tokens[0]
+        while isinstance(next_tok, LogicalOr):
+            if self.type != "BOOLEAN":
+                raise ParseError(f"BOOLEAN expected, got {self.type} instead")
+            binaryop = BinaryOp() # BinaryOp
+            binaryop.parse(tokens)
+            self.components.append(binaryop)
+            logical_and_exp = LogicalAndExpression() # LogicalAndExpression
+            logical_and_exp.parse(tokens)
+            self.components.append(logical_and_exp)
+            if logical_and_exp.get_type() != "BOOLEAN":
+                raise ParseError(f"BOOLEAN expected, got {self.type} instead")
+            next_tok = tokens[0]
+    
+    def generate_code(self, indents=0):
+        output = ""
+        output += self.components[0].generate_code()
+        for i in range(1, len(self.components), 2):
+            if self.components[i].value == " OR ": # BinaryOp
+                output += ".logical_or("
+                output += self.components[i+1].generate_code()
+                output += ")"
+        return output
+
+class LogicalAndExpression(Component):
+    def __init__(self):
+        super().__init__()
+        self.type = None
+    
+    def get_type(self):
+        return self.type
+    
+    def parse(self, tokens):
+        equality_exp = EqualityExpression() # EqualityExpression
+        equality_exp.parse(tokens)
+        self.components.append(equality_exp)
+        self.type = equality_exp.get_type()
+        next_tok = tokens[0]
+        while isinstance(next_tok, LogicalAnd):
+            if self.type != "BOOLEAN":
+                raise ParseError(f"BOOLEAN expected, got {self.type} instead")
+            binaryop = BinaryOp() # BinaryOp
+            binaryop.parse(tokens)
+            self.components.append(binaryop)
+            equality_exp = EqualityExpression() # EqualityExp
+            equality_exp.parse(tokens)
+            self.components.append(equality_exp)
+            if equality_exp.get_type() != "BOOLEAN":
+                raise ParseError(f"BOOLEAN expected, got {self.type} instead")
+            next_tok = tokens[0]
+    
+    def generate_code(self, indents=0):
+        output = ""
+        output += self.components[0].generate_code()
+        for i in range(1, len(self.components), 2):
+            if self.components[i].value == " AND ": # BinaryOp
+                output += ".logical_and("
+                output += self.components[i+1].generate_code()
+                output += ")"
+        return output
+
+class EqualityExpression(Component):
+    def __init__(self):
+        super().__init__()
+        self.type = None
+    
+    def get_type(self):
+        return self.type
+    
+    def parse(self, tokens):
+        relational_exp = RelationalExpression() # RelationalExpression
+        relational_exp.parse(tokens)
+        self.components.append(relational_exp)
+        self.type = relational_exp.get_type()
+        next_tok = tokens[0]
+        while isinstance(next_tok, Equal) or isinstance(next_tok, NotEqual):
+            self.type = "BOOLEAN"
+            binaryop = BinaryOp() # BinaryOp
+            binaryop.parse(tokens)
+            self.components.append(binaryop)
+            relational_exp = RelationalExpression() # RelationalExpression
+            relational_exp.parse(tokens)
+            self.components.append(relational_exp)
+            next_tok = tokens[0]
+    
+    def generate_code(self, indents=0):
+        output = ""
+        output += self.components[0].generate_code()
+        for i in range(1, len(self.components), 2):
+            if self.components[i].value == "=": # BinaryOp
+                output += ".equals("
+                output += self.components[i+1].generate_code()
+                output += ")"
+            elif self.components[i].value == "<>": # BinaryOp
+                output += ".not_equals("
+                output += self.components[i+1].generate_code()
+                output += ")"
+        return output
+
+class RelationalExpression(Component):
+    def __init__(self):
+        super().__init__()
+        self.type = None
+    
+    def get_type(self):
+        return self.type
+    
+    def parse(self, tokens):
+        additive_exp = AdditiveExpression() # AdditiveExpression
+        additive_exp.parse(tokens)
+        self.components.append(additive_exp)
+        self.type = additive_exp.get_type()
+        next_tok = tokens[0]
+        if isinstance(next_tok, LessThanEqual) or isinstance(next_tok, MoreThanEqual) or isinstance(next_tok, MoreThan) or isinstance(next_tok, LessThan):
+            if self.type not in ("INTEGER", "REAL"):
+                raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
+            self.type = "BOOLEAN"
+        while isinstance(next_tok, LessThanEqual) or isinstance(next_tok, MoreThanEqual) or isinstance(next_tok, MoreThan) or isinstance(next_tok, LessThan):
+            binaryop = BinaryOp() # BinaryOp
+            binaryop.parse(tokens)
+            self.components.append(binaryop)
+            additive_exp = AdditiveExpression() # AdditiveExpression
+            additive_exp.parse(tokens)
+            self.components.append(additive_exp)
+            if additive_exp.get_type() not in ("INTEGER", "REAL"):
+                raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
+            next_tok = tokens[0]
+    
+    def generate_code(self, indents=0):
+        output = ""
+        output += self.components[0].generate_code()
+        for i in range(1, len(self.components), 2):
+            if self.components[i].value == "<=": # BinaryOp
+                output += ".less_than_equal("
+                output += self.components[i+1].generate_code()
+                output += ")"
+            if self.components[i].value == "<": # BinaryOp
+                output += ".less_than("
+                output += self.components[i+1].generate_code()
+                output += ")"
+            if self.components[i].value == ">=": # BinaryOp
+                output += ".more_than_equal("
+                output += self.components[i+1].generate_code()
+                output += ")"
+            if self.components[i].value == ">": # BinaryOp
+                output += ".more_than("
+                output += self.components[i+1].generate_code()
+                output += ")"
         return output
 
 class AdditiveExpression(Component):
@@ -318,6 +481,7 @@ class BinaryOp(Component):
     def __str__(self):
         return f"{self.__class__.__name__} value {repr(self.value)}"
 
+#TODO: string escaped literals
 class LiteralComponent(Component):
     def __init__(self):
         super().__init__()
@@ -343,11 +507,19 @@ class LiteralComponent(Component):
         self.value = token.value
 
     def generate_code(self, indents=0):
-        output = self.get_type()
-        output += "("
-        output += self.value
-        output += ")"
-        return output
+        if self.get_type() not in ("BOOLEAN", "DATE"):
+            output = self.get_type()
+            output += "("
+            output += self.value
+            output += ")"
+            return output
+        elif self.get_type() == "BOOLEAN":
+            output = "BOOLEAN("
+            output += "True" if self.value == "TRUE" else "False"
+            output += ")"
+            return output
+        else:
+            return ""
 
     def __repr__(self):
         return f"{self.__class__.__name__} value {repr(self.value)} type {self.get_type()}"

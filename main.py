@@ -28,6 +28,7 @@ def tokenise(code):
             if results[0]:
                 token_list.append(t)
                 code = results[1]
+                # print(f"code: {repr(code)}")
                 break
         else:
             print(f"Current token list: {token_list}")
@@ -42,7 +43,11 @@ if __name__ == '__main__':
     token_list = tokenise(contents)
     print(token_list)
     program = components.Program()
-    program.parse(token_list)
+    try:
+        program.parse(token_list)
+    except components.ParseError as e:
+        print(f"token list: {token_list}")
+        print(f"ParseError: {e.message}")
     print(program.get_graph_string())
     generated_code = program.generate_code()
     full_code = snippets.header + generated_code

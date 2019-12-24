@@ -129,7 +129,8 @@ class Literal(Token):
         self.regex = re.compile("^\s*([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+|TRUE|FALSE|\".*\"|'.')((?:.|\n)*)$")
 
 
-TOKEN_LIST = [Comment, LineSep, OutputKeyword, Literal, 
+TOKEN_LIST = [LineSep,
+                Comment, OutputKeyword, Literal, 
                 LogicalAnd, LogicalOr, LogicalNot, Div, Mod,
                 Multiply, Divide, Plus, Minus,
                 NotEqual, LessThanEqual, MoreThanEqual, LessThan, MoreThan, Equal,

@@ -1,3 +1,4 @@
+# TODO: logical not
 header = \
 """class _PrimitiveType:
     pass
@@ -54,6 +55,30 @@ class INTEGER(_PrimitiveType):
             return INTEGER(self.value // other.value)
         else:
             raise TypeError(f"INTEGER expected, got {type(other)} instead")
+    def equals(self, other):
+        return BOOLEAN(self.value == other.value)
+    def not_equals(self, other):
+        return BOOLEAN(self.value != other.value)
+    def less_than(self, other):
+        if isinstance(other, INTEGER) or isinstance(other, REAL):
+            return BOOLEAN(self.value < other.value)
+        else:
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
+    def more_than(self, other):
+        if isinstance(other, INTEGER) or isinstance(other, REAL):
+            return BOOLEAN(self.value > other.value)
+        else:
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
+    def less_than_equal(self, other):
+        if isinstance(other, INTEGER) or isinstance(other, REAL):
+            return BOOLEAN(self.value <= other.value)
+        else:
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
+    def more_than_equal(self, other):
+        if isinstance(other, INTEGER) or isinstance(other, REAL):
+            return BOOLEAN(self.value >= other.value)
+        else:
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
 class REAL(_PrimitiveType):
     def __init__(self, value):
         if isinstance(value, _PrimitiveType):
@@ -89,6 +114,30 @@ class REAL(_PrimitiveType):
             return REAL(self.value / other.value)
         else:
             raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
+    def equals(self, other):
+        return BOOLEAN(self.value == other.value)
+    def not_equals(self, other):
+        return BOOLEAN(self.value != other.value)
+    def less_than(self, other):
+        if isinstance(other, INTEGER) or isinstance(other, REAL):
+            return BOOLEAN(self.value < other.value)
+        else:
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
+    def more_than(self, other):
+        if isinstance(other, INTEGER) or isinstance(other, REAL):
+            return BOOLEAN(self.value > other.value)
+        else:
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
+    def less_than_equal(self, other):
+        if isinstance(other, INTEGER) or isinstance(other, REAL):
+            return BOOLEAN(self.value <= other.value)
+        else:
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
+    def more_than_equal(self, other):
+        if isinstance(other, INTEGER) or isinstance(other, REAL):
+            return BOOLEAN(self.value >= other.value)
+        else:
+            raise TypeError(f"INTEGER or REAL expected, got {type(other)} instead")
 class STRING(_PrimitiveType):
     def __init__(self, value):
         if isinstance(value, _PrimitiveType):
@@ -98,6 +147,10 @@ class STRING(_PrimitiveType):
         self.value = value
     def copy(self):
         return STRING(self.value)
+    def equals(self, other):
+        return BOOLEAN(self.value == other.value)
+    def not_equals(self, other):
+        return BOOLEAN(self.value != other.value)
 class CHAR(_PrimitiveType):
     def __init__(self, value):
         if isinstance(value, _PrimitiveType):
@@ -109,6 +162,10 @@ class CHAR(_PrimitiveType):
         self.value = value
     def copy(self):
         return CHAR(self.value)
+    def equals(self, other):
+        return BOOLEAN(self.value == other.value)
+    def not_equals(self, other):
+        return BOOLEAN(self.value != other.value)
 class BOOLEAN(_PrimitiveType):
     def __init__(self, value):
         if isinstance(value, _PrimitiveType):
@@ -118,6 +175,20 @@ class BOOLEAN(_PrimitiveType):
         self.value = value
     def copy(self):
         return BOOLEAN(self.value)
+    def logical_or(self, other):
+        if isinstance(other, BOOLEAN):
+            return BOOLEAN(self.value or other.value)
+        else:
+            raise TypeError(f"BOOLEAN expected, got {type(other)} instead")
+    def logical_and(self, other):
+        if isinstance(other, BOOLEAN):
+            return BOOLEAN(self.value and other.value)
+        else:
+            raise TypeError(f"BOOLEAN expected, got {type(other)} instead")
+    def equals(self, other):
+        return BOOLEAN(self.value == other.value)
+    def not_equals(self, other):
+        return BOOLEAN(self.value != other.value)
 """
 
 #TODO: DATE
