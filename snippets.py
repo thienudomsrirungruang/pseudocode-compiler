@@ -185,6 +185,8 @@ class BOOLEAN(_PrimitiveType):
             return BOOLEAN(self.value and other.value)
         else:
             raise TypeError(f"BOOLEAN expected, got {type(other)} instead")
+    def logical_not(self):
+        return BOOLEAN(not self.value)
     def equals(self, other):
         return BOOLEAN(self.value == other.value)
     def not_equals(self, other):

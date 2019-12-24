@@ -28,21 +28,28 @@ class LineSep(Token):
     def __init__(self):
         super().__init__()
         self.regex = re.compile("^\s*(\n)((?:.|\n)*)$")
+    
+    def check_exists(self, code):
+        if re.search(self.regex, code):
+            groups = re.match(self.regex, code)
+            self.value = groups[1]
+            return True, " " + groups[2]
+        return False, None
 
 class LogicalAnd(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*( AND )((?:.|\n)*)$")
+        self.regex = re.compile("^\s*( AND)( (?:.|\n)*)$")
 
 class LogicalOr(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*( OR )((?:.|\n)*)$")
+        self.regex = re.compile("^\s*( OR)( (?:.|\n)*)$")
 
 class LogicalNot(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*( NOT )((?:.|\n)*)$")
+        self.regex = re.compile("^\s*( NOT)( (?:.|\n)*)$")
 
 class Equal(Token):
     def __init__(self):
@@ -97,12 +104,12 @@ class Divide(Token):
 class Mod(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*( MOD )((?:.|\n)*)$")
+        self.regex = re.compile("^\s*( MOD)( (?:.|\n)*)$")
 
 class Div(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*( DIV )((?:.|\n)*)$")
+        self.regex = re.compile("^\s*( DIV)( (?:.|\n)*)$")
 
 class LeftBracket(Token):
     def __init__(self):
@@ -121,7 +128,7 @@ class Keyword(Token):
 class OutputKeyword(Keyword):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*(OUTPUT )((?:.|\n)*)$")
+        self.regex = re.compile("^\s*( OUTPUT)( (?:.|\n)*)$")
 
 class Literal(Token):
     def __init__(self):

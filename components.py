@@ -133,7 +133,7 @@ class LogicalOrExpression(Component):
         output = ""
         output += self.components[0].generate_code()
         for i in range(1, len(self.components), 2):
-            if self.components[i].value == " OR ": # BinaryOp
+            if self.components[i].value == " OR": # BinaryOp
                 output += ".logical_or("
                 output += self.components[i+1].generate_code()
                 output += ")"
@@ -170,7 +170,7 @@ class LogicalAndExpression(Component):
         output = ""
         output += self.components[0].generate_code()
         for i in range(1, len(self.components), 2):
-            if self.components[i].value == " AND ": # BinaryOp
+            if self.components[i].value == " AND": # BinaryOp
                 output += ".logical_and("
                 output += self.components[i+1].generate_code()
                 output += ")"
@@ -366,11 +366,11 @@ class Term(Component):
                 output += ".divide("
                 output += self.components[i+1].generate_code()
                 output += ")"
-            elif self.components[i].value == " DIV ":
+            elif self.components[i].value == " DIV":
                 output += ".div("
                 output += self.components[i+1].generate_code()
                 output += ")"
-            elif self.components[i].value == " MOD ":
+            elif self.components[i].value == " MOD":
                 output += ".mod("
                 output += self.components[i+1].generate_code()
                 output += ")"
@@ -403,7 +403,7 @@ class Factor(Component):
             self.components.append(expr)
             self.exprtype = "bracket"
             self.type = expr.get_type()
-        elif isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
+        elif isinstance(next_tok, Plus) or isinstance(next_tok, Minus) or isinstance(next_tok, LogicalNot):
             uop = UnaryOp() # UnaryOp
             uop.parse(tokens)
             self.components.append(uop)
@@ -412,6 +412,12 @@ class Factor(Component):
             self.components.append(factor)
             self.exprtype = "unary_op"
             self.type = factor.get_type()
+            if isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
+                if self.type not in ("INTEGER", "REAL"):
+                    raise ParseError(f"Expected INTEGER or REAL, got {self.type} instead")
+            elif isinstance(next_tok, LogicalNot):
+                if self.type not in ("BOOLEAN"):
+                    raise ParseError(f"Expected BOOLEAN, got {self.type} instead")
         else:
             lit = LiteralComponent()
             lit.parse(tokens)
@@ -444,8 +450,8 @@ class UnaryOp(Component):
 
     def parse(self, tokens):
         token = tokens.popleft() # Plus OR Minus
-        if not isinstance(token, Plus) and not isinstance(token, Minus):
-            raise ParseError("Expected Plus or Minus")
+        if not isinstance(token, Plus) and not isinstance(token, Minus) and not isinstance(token, LogicalNot):
+            raise ParseError("Expected Plus or Minus or LogicalNot")
         self.value = token.value
     
     def generate_code(self, indents=0):
@@ -454,6 +460,8 @@ class UnaryOp(Component):
             output += ".positive()"
         elif self.value == "-":
             output += ".negative()"
+        elif self.value == " NOT":
+            output += ".logical_not()"
         return output
 
     def __repr__(self):
@@ -462,6 +470,7 @@ class UnaryOp(Component):
     def __str__(self):
         return f"{self.__class__.__name__} value {repr(self.value)}"
 
+#TODO: string concat &
 class BinaryOp(Component):
     def __init__(self):
         super().__init__()

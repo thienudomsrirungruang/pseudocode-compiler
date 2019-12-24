@@ -21,7 +21,7 @@ def write_to_file(filename, contents):
 # raises LexError if it cannot be tokenised.
 def tokenise(code):
     token_list = collections.deque()
-    while len(code) > 0:
+    while code != " ": # one space is always left as a result of the last linesep parse
         for token in tokens.TOKEN_LIST:
             t = token()
             results = t.check_exists(code)
@@ -32,7 +32,7 @@ def tokenise(code):
                 break
         else:
             print(f"Current token list: {token_list}")
-            raise LexError(f"Couldn't lex code near:\n{code[:50] if len(code) > 50 else code}")
+            raise LexError(f"Couldn't lex code near:\n>{code[:50] if len(code) > 50 else code}<")
     return token_list
 
 if __name__ == '__main__':
@@ -45,9 +45,9 @@ if __name__ == '__main__':
     program = components.Program()
     try:
         program.parse(token_list)
-    except components.ParseError as e:
+    except Exception as e:
         print(f"token list: {token_list}")
-        print(f"ParseError: {e.message}")
+        raise e
     print(program.get_graph_string())
     generated_code = program.generate_code()
     full_code = snippets.header + generated_code
