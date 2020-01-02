@@ -37,11 +37,10 @@ def tokenise(code):
 
 if __name__ == '__main__':
     contents = read_from_file(os.path.abspath(os.path.join(__file__, '../input.pdc')))
-    # sanitise input so there's always a newline
-    if contents[-1] != "\n":
-        contents += "\n"
+    # sanitise input so there's always a newline both at the start and end
+    contents = "\n" + contents + "\n"
     token_list = tokenise(contents)
-    print(token_list)
+    print("token list:\n" + "\n".join(list(map(str,token_list))))
     program = components.Program()
     try:
         program.parse(token_list)

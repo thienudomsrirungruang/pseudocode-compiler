@@ -395,7 +395,7 @@ class Factor(Component):
         next_tok = tokens[0]
         if isinstance(next_tok, LeftBracket):
             tokens.popleft()
-            expr = AdditiveExpression()
+            expr = LogicalOrExpression()
             expr.parse(tokens)
             token = tokens.popleft()
             if not isinstance(token, RightBracket):
