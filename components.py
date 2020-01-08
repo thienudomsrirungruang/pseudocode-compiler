@@ -47,6 +47,20 @@ class Program(Component):
     
     def parse(self, tokens):
         while len(tokens) > 0:
+            scope = Scope()
+            scope.parse(tokens)
+            self.components.append(scope)
+    
+    def generate_code(self, indents=0):
+        output = self.components[0].generate_code()
+
+# TODO: Local variables / constants
+class Scope(Component):
+    def __init__(self):
+        super().__init__()
+
+    def parse(self, tokens):
+        while len(tokens) > 0:
             statement = Statement()
             statement.parse(tokens)
             self.components.append(statement)

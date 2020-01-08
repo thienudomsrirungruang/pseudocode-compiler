@@ -39,17 +39,17 @@ class LineSep(Token):
 class LogicalAnd(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*( AND)( (?:.|\n)*)$")
+        self.regex = re.compile("^\s*[^0-9a-zA-Z](AND)([^0-9a-zA-Z](?:.|\n)*)$")
 
 class LogicalOr(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*( OR)( (?:.|\n)*)$")
+        self.regex = re.compile("^\s*[^0-9a-zA-Z](OR)([^0-9a-zA-Z](?:.|\n)*)$")
 
 class LogicalNot(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*( NOT)( (?:.|\n)*)$")
+        self.regex = re.compile("^\s*[^0-9a-zA-Z](NOT)([^0-9a-zA-Z](?:.|\n)*)$")
 
 class Equal(Token):
     def __init__(self):
@@ -104,12 +104,12 @@ class Divide(Token):
 class Mod(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*( MOD)( (?:.|\n)*)$")
+        self.regex = re.compile("^\s*[^0-9a-zA-Z](MOD)([^0-9a-zA-Z](?:.|\n)*)$")
 
 class Div(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*( DIV)( (?:.|\n)*)$")
+        self.regex = re.compile("^\s*[^0-9a-zA-Z](DIV)([^0-9a-zA-Z](?:.|\n)*)$")
 
 class LeftBracket(Token):
     def __init__(self):
@@ -128,13 +128,17 @@ class Keyword(Token):
 class OutputKeyword(Keyword):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*( OUTPUT)( (?:.|\n)*)$")
+        self.regex = re.compile("^\s*[^0-9a-zA-Z](OUTPUT)([^0-9a-zA-Z](?:.|\n)*)$")
 
 class Literal(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+|TRUE|FALSE|\".*\"|'.')((?:.|\n)*)$")
+        self.regex = re.compile("^\s*([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+|(?<=[^0-9a-zA-Z])TRUE(?=[^0-9a-zA-Z])|(?<=[^0-9a-zA-Z])FALSE(?=[^0-9a-zA-Z])|\".*\"|'.')((?:.|\n)*)$")
 
+class Identifier(Token):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s*[^0-9a-zA-Z]([a-zA-z][a-zA-z0-9]*)((?:.|\n)*)$")
 
 TOKEN_LIST = [LineSep,
                 Comment, OutputKeyword, Literal, 

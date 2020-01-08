@@ -33,7 +33,6 @@ if __name__ == '__main__':
     proc = subprocess.Popen([sys.executable, OUTPUT_PATH], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     program_output = proc.communicate()[0]
     split_lines = program_output.splitlines()
-    print(split_lines)
     
     # check the output against the file
     print("Checking output against the file...")

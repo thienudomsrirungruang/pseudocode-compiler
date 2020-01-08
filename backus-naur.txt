@@ -1,9 +1,12 @@
 ; Written in EBNF (Extended Backus-Naur Form)
 
-<program> ::= {<statement>}
-<statement> ::=  <outputstatement> [<comment>] <newline>
-              |  [<comment>] <newline>
+<program> ::= <scope>
+<scope> ::= {<statement>}
+<statement> ::= <output-statement> [<comment>] <newline>
+              | <assignment-statement> [<comment>] <newline>
+              | [<comment>] <newline>
 <outputstatement> ::= "OUTPUT " <logical-or-exp>
+<assignment-statement> ::= <>
 <logical-or-exp> ::= <logical-and-exp> { "||" <logical-and-exp}
 <logical-and-exp> ::= <equality-exp> { "&&" <equality-exp> }
 <equality-exp> ::= <relational-exp> { "!=" | "==" <relational-exp> }
