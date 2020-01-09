@@ -89,8 +89,12 @@ class Statement(Component):
             declare_variable_statement = DeclareVariableStatement()
             declare_variable_statement.parse(tokens, variable_scope)
             self.components.append(declare_variable_statement)
+        elif isinstance(next_tok, Identifier):
+            assign_variable_statement = AssignVariableStatement()
+            assign_variable_statement.parse(tokens, variable_scope)
+            self.components.append(assign_variable_statement)
         elif not isinstance(next_tok, LineSep) and not isinstance(next_tok, Comment):
-            raise ParseError("Expected OutputKeyword or DeclareKeyword or LineSep or Comment")
+            raise ParseError("Expected OutputKeyword or DeclareKeyword or Identifier or LineSep or Comment")
         token = tokens[0]
         if isinstance(token, Comment):
             tokens.popleft() # Comment
@@ -126,7 +130,6 @@ class DeclareVariableStatement(Component):
     def __init__(self):
         super().__init__()
     
-    # TODO: Add to scope
     def parse(self, tokens, variable_scope):
         token = tokens.popleft() # DeclareKeyword
         if not isinstance(token, DeclareKeyword):
@@ -142,10 +145,38 @@ class DeclareVariableStatement(Component):
         if not isinstance(token, Datatype):
             raise ParseError("Expected Datatype")
         datatype = token.value
-        variable_scope.variables.append(Variable(identifier, datatype))
+        variable_scope.add(Variable(identifier, datatype))
 
     def generate_code(self, indents=0):
         return ""
+
+class AssignVariableStatement(Component):
+    def __init__(self):
+        super().__init__()
+        self.identifier = None
+    
+    def parse(self, tokens, variable_scope):
+        token = tokens.popleft() # Identifier
+        if not isinstance(token, Identifier):
+            raise ParseError("Expected Identifier")
+        self.identifier = (token)
+        token = tokens.popleft() # Arrow
+        if not isinstance(token, Arrow):
+            raise ParseError("Expected Arrow")
+        expression = LogicalOrExpression()
+        expression.parse(tokens, variable_scope)
+        self.components.append(expression)
+        if not variable_scope.exists(self.identifier.value):
+            raise ParseError(f"Variable {self.identifier.value} referenced before declaration")
+    
+    def generate_code(self, indents=0):
+        output = self.identifier.value
+        output += "="
+        output += self.components[0].get_type()
+        output += "("
+        output += self.components[0].generate_code(indents)
+        output += ")"
+        return output
 
 class LogicalOrExpression(Component):
     def __init__(self):

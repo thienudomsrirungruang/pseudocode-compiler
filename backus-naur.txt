@@ -4,9 +4,11 @@
 <scope> ::= {<statement>}
 <statement> ::= <output-statement> [<comment>] <newline>
               | <declare-variable-statement> [<comment>] <newline>
+              | <assign-variable-statement> [<comment>] <newline>
               | [<comment>] <newline>
 <outputstatement> ::= "OUTPUT " <logical-or-exp>
-<declare-variable-statement> ::= "DECLARE" <identifier> ":" <datatype> 
+<declare-variable-statement> ::= "DECLARE" <identifier> ":" <datatype>
+<assign-variable-statement> ::= <identifier> "←" <logical-or-exp>
 <logical-or-exp> ::= <logical-and-exp> { "||" <logical-and-exp}
 <logical-and-exp> ::= <equality-exp> { "&&" <equality-exp> }
 <equality-exp> ::= <relational-exp> { "<>" | "=" <relational-exp> }

@@ -3,8 +3,15 @@ from tokens import *
 
 class VariableScope():
     def __init__(self):
-        self.variables = []
+        self.variables = {}
     
+    def add(self, variable):
+        self.variables[variable.identifier] = variable
+
+    def exists(self, identifier):
+        print(f"exists({identifier}, {self.variables.keys()})")
+        return identifier in self.variables.keys()
+
     def __repr__(self):
         return f"VariableScope {self.variables}"
 

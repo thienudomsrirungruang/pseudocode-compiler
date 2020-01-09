@@ -122,6 +122,12 @@ class Colon(Token):
         self.allow_trailing_space = True
         self.regex = re.compile("^\s*(:)((?:.|\n)*)$")
 
+class Arrow(Token):
+    def __init__(self):
+        super().__init__()
+        self.allow_trailing_space = True
+        self.regex = re.compile("^\s*(←)((?:.|\n)*)$")
+
 class LeftBracket(Token):
     def __init__(self):
         super().__init__()
@@ -166,7 +172,7 @@ class Datatype(Keyword):
 TOKEN_LIST = [LineSep,
                 Comment, OutputKeyword, DeclareKeyword, Literal, Datatype,
                 LogicalAnd, LogicalOr, LogicalNot, Div, Mod,
-                Multiply, Divide, Plus, Minus, Colon,
+                Multiply, Divide, Plus, Minus, Colon, Arrow,
                 NotEqual, LessThanEqual, MoreThanEqual, LessThan, MoreThan, Equal,
                 LeftBracket, RightBracket,
                 Identifier] # leftmost takes priority
