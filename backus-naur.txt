@@ -3,10 +3,10 @@
 <program> ::= <scope>
 <scope> ::= {<statement>}
 <statement> ::= <output-statement> [<comment>] <newline>
-              | <assignment-statement> [<comment>] <newline>
+              | <declare-variable-statement> [<comment>] <newline>
               | [<comment>] <newline>
 <outputstatement> ::= "OUTPUT " <logical-or-exp>
-<assignment-statement> ::= <>
+<declare-variable-statement> ::= "DECLARE" <identifier> ":" <datatype> 
 <logical-or-exp> ::= <logical-and-exp> { "||" <logical-and-exp}
 <logical-and-exp> ::= <equality-exp> { "&&" <equality-exp> }
 <equality-exp> ::= <relational-exp> { "!=" | "==" <relational-exp> }
@@ -23,5 +23,7 @@
             | TRUE
             | FALSE
             | ".*"
+<datatype> ::= "INTEGER" | "STRING" | "REAL" | "BOOLEAN" | "CHAR"
+<identifier> ::= {".*"}
 <comment> ::= "//(.*+)"
 <unaryop> ::= "-" | "+"

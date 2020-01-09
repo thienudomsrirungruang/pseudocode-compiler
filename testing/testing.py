@@ -18,8 +18,11 @@ if __name__ == '__main__':
     
     # copies test pseudocode file to actual input file
     print("Copying input...")
-    shutil.copyfile(TEST_INPUT_PATH, INPUT_PATH)
-
+    with open(TEST_INPUT_PATH, 'r') as f:
+        pdc = f.read()
+    with open(INPUT_PATH, 'w') as f:
+        f.write(pdc)
+        f.flush()
     time.sleep(1)
 
     # run the program

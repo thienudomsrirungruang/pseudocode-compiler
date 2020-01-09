@@ -1,5 +1,6 @@
 import re
 from tokens import *
+from objects import *
 
 class ParseError(Exception):
     def __init__(self, message):
@@ -46,13 +47,13 @@ class Program(Component):
         super().__init__()
     
     def parse(self, tokens):
-        while len(tokens) > 0:
-            scope = Scope()
-            scope.parse(tokens)
-            self.components.append(scope)
+        scope = Scope()
+        scope.parse(tokens)
+        self.components.append(scope)
     
     def generate_code(self, indents=0):
         output = self.components[0].generate_code()
+        return output
 
 # TODO: Local variables / constants
 class Scope(Component):
@@ -60,13 +61,15 @@ class Scope(Component):
         super().__init__()
 
     def parse(self, tokens):
+        variable_scope = VariableScope()
         while len(tokens) > 0:
             statement = Statement()
-            statement.parse(tokens)
+            statement.parse(tokens, variable_scope)
             self.components.append(statement)
+        print(f'variable_scope {variable_scope}')
     
     def generate_code(self, indents=0):
-        output = "    " * indents
+        output = ""
         for component in self.components:
             output += component.generate_code(indents)
         return output
@@ -75,15 +78,19 @@ class Statement(Component):
     def __init__(self):
         super().__init__()
     
-    def parse(self, tokens):
+    def parse(self, tokens, variable_scope):
         token = tokens[0]
         next_tok = tokens[0] # OutputKeyword OR LineSep
         if isinstance(next_tok, OutputKeyword):
             output_statement = OutputStatement()
-            output_statement.parse(tokens)
+            output_statement.parse(tokens, variable_scope)
             self.components.append(output_statement)
+        elif isinstance(next_tok, DeclareKeyword):
+            declare_variable_statement = DeclareVariableStatement()
+            declare_variable_statement.parse(tokens, variable_scope)
+            self.components.append(declare_variable_statement)
         elif not isinstance(next_tok, LineSep) and not isinstance(next_tok, Comment):
-            raise ParseError("Expected OutputKeyword or LineSep or Comment")
+            raise ParseError("Expected OutputKeyword or DeclareKeyword or LineSep or Comment")
         token = tokens[0]
         if isinstance(token, Comment):
             tokens.popleft() # Comment
@@ -97,24 +104,48 @@ class Statement(Component):
             output += component.generate_code(indents)
         return output
 
-class OutputStatement(Statement):
+class OutputStatement(Component):
     def __init__(self):
         super().__init__()
     
-    def parse(self, tokens):
+    def parse(self, tokens, variable_scope):
         token = tokens.popleft() # OutputKeyword
         if not isinstance(token, OutputKeyword):
             raise ParseError("Expected OutputKeyword")
         expression = LogicalOrExpression() # Expression
-        expression.parse(tokens)
+        expression.parse(tokens, variable_scope)
         self.components.append(expression)
 
     def generate_code(self, indents=0):
-        output = "    " * indents
-        output += "print("
+        output = "print("
         output += self.components[0].generate_code()
         output += ".value)\n"
         return output
+
+class DeclareVariableStatement(Component):
+    def __init__(self):
+        super().__init__()
+    
+    # TODO: Add to scope
+    def parse(self, tokens, variable_scope):
+        token = tokens.popleft() # DeclareKeyword
+        if not isinstance(token, DeclareKeyword):
+            raise ParseError("Expected DeclareKeyword")
+        token = tokens.popleft() # Identifier
+        if not isinstance(token, Identifier):
+            raise ParseError("Expected Identifier")
+        identifier = token.value
+        token = tokens.popleft() # Colon
+        if not isinstance(token, Colon):
+            raise ParseError("Expected Colon")
+        token = tokens.popleft() # Datatype
+        if not isinstance(token, Datatype):
+            raise ParseError("Expected Datatype")
+        datatype = token.value
+        variable_scope.variables.append(Variable(identifier, datatype))
+
+    def generate_code(self, indents=0):
+        return ""
 
 class LogicalOrExpression(Component):
     def __init__(self):
@@ -124,9 +155,9 @@ class LogicalOrExpression(Component):
     def get_type(self):
         return self.type
     
-    def parse(self, tokens):
+    def parse(self, tokens, variable_scope):
         logical_and_exp = LogicalAndExpression() # LogicalAndExpression
-        logical_and_exp.parse(tokens)
+        logical_and_exp.parse(tokens, variable_scope)
         self.components.append(logical_and_exp)
         self.type = logical_and_exp.get_type()
         next_tok = tokens[0]
@@ -134,10 +165,10 @@ class LogicalOrExpression(Component):
             if self.type != "BOOLEAN":
                 raise ParseError(f"BOOLEAN expected, got {self.type} instead")
             binaryop = BinaryOp() # BinaryOp
-            binaryop.parse(tokens)
+            binaryop.parse(tokens, variable_scope)
             self.components.append(binaryop)
             logical_and_exp = LogicalAndExpression() # LogicalAndExpression
-            logical_and_exp.parse(tokens)
+            logical_and_exp.parse(tokens, variable_scope)
             self.components.append(logical_and_exp)
             if logical_and_exp.get_type() != "BOOLEAN":
                 raise ParseError(f"BOOLEAN expected, got {self.type} instead")
@@ -147,7 +178,7 @@ class LogicalOrExpression(Component):
         output = ""
         output += self.components[0].generate_code()
         for i in range(1, len(self.components), 2):
-            if self.components[i].value == " OR": # BinaryOp
+            if self.components[i].value == "OR": # BinaryOp
                 output += ".logical_or("
                 output += self.components[i+1].generate_code()
                 output += ")"
@@ -161,9 +192,9 @@ class LogicalAndExpression(Component):
     def get_type(self):
         return self.type
     
-    def parse(self, tokens):
+    def parse(self, tokens, variable_scope):
         equality_exp = EqualityExpression() # EqualityExpression
-        equality_exp.parse(tokens)
+        equality_exp.parse(tokens, variable_scope)
         self.components.append(equality_exp)
         self.type = equality_exp.get_type()
         next_tok = tokens[0]
@@ -171,10 +202,10 @@ class LogicalAndExpression(Component):
             if self.type != "BOOLEAN":
                 raise ParseError(f"BOOLEAN expected, got {self.type} instead")
             binaryop = BinaryOp() # BinaryOp
-            binaryop.parse(tokens)
+            binaryop.parse(tokens, variable_scope)
             self.components.append(binaryop)
             equality_exp = EqualityExpression() # EqualityExp
-            equality_exp.parse(tokens)
+            equality_exp.parse(tokens, variable_scope)
             self.components.append(equality_exp)
             if equality_exp.get_type() != "BOOLEAN":
                 raise ParseError(f"BOOLEAN expected, got {self.type} instead")
@@ -184,7 +215,7 @@ class LogicalAndExpression(Component):
         output = ""
         output += self.components[0].generate_code()
         for i in range(1, len(self.components), 2):
-            if self.components[i].value == " AND": # BinaryOp
+            if self.components[i].value == "AND": # BinaryOp
                 output += ".logical_and("
                 output += self.components[i+1].generate_code()
                 output += ")"
@@ -198,19 +229,19 @@ class EqualityExpression(Component):
     def get_type(self):
         return self.type
     
-    def parse(self, tokens):
+    def parse(self, tokens, variable_scope):
         relational_exp = RelationalExpression() # RelationalExpression
-        relational_exp.parse(tokens)
+        relational_exp.parse(tokens, variable_scope)
         self.components.append(relational_exp)
         self.type = relational_exp.get_type()
         next_tok = tokens[0]
         while isinstance(next_tok, Equal) or isinstance(next_tok, NotEqual):
             self.type = "BOOLEAN"
             binaryop = BinaryOp() # BinaryOp
-            binaryop.parse(tokens)
+            binaryop.parse(tokens, variable_scope)
             self.components.append(binaryop)
             relational_exp = RelationalExpression() # RelationalExpression
-            relational_exp.parse(tokens)
+            relational_exp.parse(tokens, variable_scope)
             self.components.append(relational_exp)
             next_tok = tokens[0]
     
@@ -236,9 +267,9 @@ class RelationalExpression(Component):
     def get_type(self):
         return self.type
     
-    def parse(self, tokens):
+    def parse(self, tokens, variable_scope):
         additive_exp = AdditiveExpression() # AdditiveExpression
-        additive_exp.parse(tokens)
+        additive_exp.parse(tokens, variable_scope)
         self.components.append(additive_exp)
         self.type = additive_exp.get_type()
         next_tok = tokens[0]
@@ -248,10 +279,10 @@ class RelationalExpression(Component):
             self.type = "BOOLEAN"
         while isinstance(next_tok, LessThanEqual) or isinstance(next_tok, MoreThanEqual) or isinstance(next_tok, MoreThan) or isinstance(next_tok, LessThan):
             binaryop = BinaryOp() # BinaryOp
-            binaryop.parse(tokens)
+            binaryop.parse(tokens, variable_scope)
             self.components.append(binaryop)
             additive_exp = AdditiveExpression() # AdditiveExpression
-            additive_exp.parse(tokens)
+            additive_exp.parse(tokens, variable_scope)
             self.components.append(additive_exp)
             if additive_exp.get_type() not in ("INTEGER", "REAL"):
                 raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
@@ -287,9 +318,9 @@ class AdditiveExpression(Component):
     def get_type(self):
         return self.type
 
-    def parse(self, tokens):
+    def parse(self, tokens, variable_scope):
         term = Term() # Term
-        term.parse(tokens)
+        term.parse(tokens, variable_scope)
         self.components.append(term)
         self.type = term.get_type()
         next_tok = tokens[0]
@@ -297,10 +328,10 @@ class AdditiveExpression(Component):
             if self.type not in ("INTEGER", "REAL"):
                 raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
             binaryop = BinaryOp() # BinaryOp
-            binaryop.parse(tokens)
+            binaryop.parse(tokens, variable_scope)
             self.components.append(binaryop)
             term = Term() # Term
-            term.parse(tokens)
+            term.parse(tokens, variable_scope)
             self.components.append(term)
             if term.get_type() not in ("INTEGER", "REAL"):
                 raise ParseError(f"INTEGER or REAL expected, got {term.type} instead")
@@ -336,9 +367,9 @@ class Term(Component):
     def get_type(self):
         return self.type
 
-    def parse(self, tokens):
+    def parse(self, tokens, variable_scope):
         factor = Factor() # Factor
-        factor.parse(tokens)
+        factor.parse(tokens, variable_scope)
         self.components.append(factor)
         self.type = factor.get_type()
         next_tok = tokens[0]
@@ -350,13 +381,12 @@ class Term(Component):
                 if self.type not in ("INTEGER"):
                     raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
             binaryop = BinaryOp() # BinaryOp
-            binaryop.parse(tokens)
+            binaryop.parse(tokens, variable_scope)
             if binaryop.value == "/":
                 self.type == "REAL"
             self.components.append(binaryop)
             factor = Factor() # Factor
-            factor.parse(tokens)
-            print(factor.get_graph_string())
+            factor.parse(tokens, variable_scope)
             self.components.append(factor)
             if binaryop.value in ("/", "*"):
                 if factor.get_type() not in ("INTEGER", "REAL"):
@@ -380,11 +410,11 @@ class Term(Component):
                 output += ".divide("
                 output += self.components[i+1].generate_code()
                 output += ")"
-            elif self.components[i].value == " DIV":
+            elif self.components[i].value == "DIV":
                 output += ".div("
                 output += self.components[i+1].generate_code()
                 output += ")"
-            elif self.components[i].value == " MOD":
+            elif self.components[i].value == "MOD":
                 output += ".mod("
                 output += self.components[i+1].generate_code()
                 output += ")"
@@ -405,12 +435,12 @@ class Factor(Component):
     def get_type(self):
         return self.type
 
-    def parse(self, tokens):
+    def parse(self, tokens, variable_scope):
         next_tok = tokens[0]
         if isinstance(next_tok, LeftBracket):
             tokens.popleft()
             expr = LogicalOrExpression()
-            expr.parse(tokens)
+            expr.parse(tokens, variable_scope)
             token = tokens.popleft()
             if not isinstance(token, RightBracket):
                 raise ParseError("Expected RightBracket")
@@ -419,10 +449,10 @@ class Factor(Component):
             self.type = expr.get_type()
         elif isinstance(next_tok, Plus) or isinstance(next_tok, Minus) or isinstance(next_tok, LogicalNot):
             uop = UnaryOp() # UnaryOp
-            uop.parse(tokens)
+            uop.parse(tokens, variable_scope)
             self.components.append(uop)
             factor = Factor() # Factor
-            factor.parse(tokens)
+            factor.parse(tokens, variable_scope)
             self.components.append(factor)
             self.exprtype = "unary_op"
             self.type = factor.get_type()
@@ -434,7 +464,7 @@ class Factor(Component):
                     raise ParseError(f"Expected BOOLEAN, got {self.type} instead")
         else:
             lit = LiteralComponent()
-            lit.parse(tokens)
+            lit.parse(tokens, variable_scope)
             self.components.append(lit)
             self.exprtype = "lit"
             self.type = lit.get_type()
@@ -462,7 +492,7 @@ class UnaryOp(Component):
         super().__init__()
         self.value = ""
 
-    def parse(self, tokens):
+    def parse(self, tokens, variable_scope):
         token = tokens.popleft() # Plus OR Minus
         if not isinstance(token, Plus) and not isinstance(token, Minus) and not isinstance(token, LogicalNot):
             raise ParseError("Expected Plus or Minus or LogicalNot")
@@ -474,7 +504,7 @@ class UnaryOp(Component):
             output += ".positive()"
         elif self.value == "-":
             output += ".negative()"
-        elif self.value == " NOT":
+        elif self.value == "NOT":
             output += ".logical_not()"
         return output
 
@@ -490,7 +520,7 @@ class BinaryOp(Component):
         super().__init__()
         self.value = ""
     
-    def parse(self, tokens):
+    def parse(self, tokens, variable_scope):
         token = tokens.popleft()
         self.value = token.value
     
@@ -523,7 +553,7 @@ class LiteralComponent(Component):
             if re.search(re.compile(i), self.value):
                 return j
 
-    def parse(self, tokens):
+    def parse(self, tokens, variable_scope):
         token = tokens.popleft()
         if not isinstance(token, Literal):
             raise ParseError(f"Expected Literal")
