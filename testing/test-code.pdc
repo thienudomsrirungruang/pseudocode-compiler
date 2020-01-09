@@ -51,6 +51,12 @@ OUTPUT 3 - 4 * 2 / 3
 OUTPUT -4 --4 * (2 * 3)
 
 // Binary Boolean Operations
+OUTPUT "hi" = "hi"
+OUTPUT 3 = 3.0
+OUTPUT 4 = 4
+OUTPUT 2=2
+OUTPUT "hi" = "hi "
+OUTPUT 3 != 'c'
 OUTPUT 3 > 2
 OUTPUT 3 >= 2
 OUTPUT 3 >= 3

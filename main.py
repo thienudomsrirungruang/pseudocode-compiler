@@ -39,8 +39,10 @@ if __name__ == '__main__':
     contents = read_from_file(os.path.abspath(os.path.join(__file__, '../input.pdc')))
     # sanitise input so there's always a newline both at the start and end
     contents = "\n" + contents + "\n"
+    # Step 1: Tokenise / Lexing
     token_list = tokenise(contents)
     print("token list:\n" + "\n".join(list(map(str,token_list))))
+    # Step 2: Create an AST (Abstract Syntax Tree)
     program = components.Program()
     try:
         program.parse(token_list)
@@ -48,6 +50,7 @@ if __name__ == '__main__':
         print(f"token list: {token_list}")
         raise e
     print(program.get_graph_string())
+    # Step 3: Generate code
     generated_code = program.generate_code()
     full_code = snippets.header + generated_code
     write_to_file(os.path.abspath(os.path.join(__file__, '../output.py')), full_code)
