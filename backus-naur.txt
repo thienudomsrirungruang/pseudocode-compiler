@@ -18,6 +18,7 @@
 <factor> ::= "(" <logical-or-exp> ")"
            | <unaryop> <factor>
            | <literal>
+           | <identifier>
 <newline> ::= "\n"
 <literal> ::= "(0-9)+"
             | "(0-9)+\.{0.9}"

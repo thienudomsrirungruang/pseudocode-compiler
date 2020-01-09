@@ -170,6 +170,7 @@ class AssignVariableStatement(Component):
         self.components.append(expression)
         if not variable_scope.exists(self.identifier.value):
             raise ParseError(f"Variable {self.identifier.value} referenced before declaration")
+        self.variable.assigned = True
     
     def generate_code(self, indents=0):
         output = self.identifier.value
@@ -177,7 +178,7 @@ class AssignVariableStatement(Component):
         output += self.variable.datatype
         output += "("
         output += self.components[0].generate_code(indents)
-        output += ")"
+        output += ")\n"
         return output
 
 class LogicalOrExpression(Component):
@@ -495,6 +496,16 @@ class Factor(Component):
             elif isinstance(next_tok, LogicalNot):
                 if self.type not in ("BOOLEAN"):
                     raise ParseError(f"Expected BOOLEAN, got {self.type} instead")
+        elif isinstance(next_tok, Identifier):
+            self.exprtype = "identifier"
+            token = tokens.popleft() # Identifier
+            self.identifier = token.value
+            if not variable_scope.exists(self.identifier):
+                raise ParseError(f"Variable {self.identifier} referenced before declaration")
+            self.variable = variable_scope.get(self.identifier)
+            if not self.variable.assigned:
+                raise ParseError(f"Variable {self.identifier} referenced before assignment")
+            self.type = self.variable.datatype
         else:
             lit = LiteralComponent()
             lit.parse(tokens, variable_scope)
@@ -512,6 +523,9 @@ class Factor(Component):
             return output
         elif self.exprtype == "lit":
             output = self.components[0].generate_code()
+            return output
+        elif self.exprtype == "identifier":
+            output = self.identifier
             return output
     
     def __repr__(self):
