@@ -11,6 +11,12 @@ class VariableScope():
     def exists(self, identifier):
         print(f"exists({identifier}, {self.variables.keys()})")
         return identifier in self.variables.keys()
+    
+    def get(self, identifier):
+        if self.exists(identifier):
+            return self.variables[identifier]
+        else:
+            return None
 
     def __repr__(self):
         return f"VariableScope {self.variables}"

@@ -154,12 +154,14 @@ class AssignVariableStatement(Component):
     def __init__(self):
         super().__init__()
         self.identifier = None
+        self.variable = None
     
     def parse(self, tokens, variable_scope):
         token = tokens.popleft() # Identifier
         if not isinstance(token, Identifier):
             raise ParseError("Expected Identifier")
-        self.identifier = (token)
+        self.identifier = token
+        self.variable = variable_scope.get(self.identifier.value)
         token = tokens.popleft() # Arrow
         if not isinstance(token, Arrow):
             raise ParseError("Expected Arrow")
@@ -172,7 +174,7 @@ class AssignVariableStatement(Component):
     def generate_code(self, indents=0):
         output = self.identifier.value
         output += "="
-        output += self.components[0].get_type()
+        output += self.variable.datatype
         output += "("
         output += self.components[0].generate_code(indents)
         output += ")"
