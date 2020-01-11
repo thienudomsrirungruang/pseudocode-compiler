@@ -157,7 +157,7 @@ class DeclareKeyword(Keyword):
 class Literal(Token):
     def __init__(self):
         super().__init__()
-        self.regex = re.compile("^\s*([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+|(?<= )TRUE(?=[^0-9a-zA-Z])|(?<= )FALSE(?=[^0-9a-zA-Z])|\".*\"|'.')((?:.|\n)*)$")
+        self.regex = re.compile("^\s*([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+|(?<= )TRUE(?=[^0-9a-zA-Z])|(?<= )FALSE(?=[^0-9a-zA-Z])|\"[^\n\"]*\"|'[^\n']')((?:.|\n)*)$")
 
 class Identifier(Token):
     def __init__(self):

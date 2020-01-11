@@ -593,7 +593,7 @@ class LiteralComponent(Component):
             "^[0-9]+$": "INTEGER",
             "^[0-9]*\.[0-9]+|[0-9]+\.[0-9]*$": "REAL",
             "^TRUE|FALSE$": "BOOLEAN",
-            "^\".*\"$": "STRING",
+            "^\"[^\n\"]*\"$": "STRING",
             "^'.'$": "CHAR"
         }
         for i, j in type_matchers.items():
