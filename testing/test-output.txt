@@ -61,3 +61,11 @@ True
 False
 True
 False
+3
+4.2
+4.5
+5
+7.5
+True
+Hello
+c

@@ -18,9 +18,9 @@ if __name__ == '__main__':
     
     # copies test pseudocode file to actual input file
     print("Copying input...")
-    with open(TEST_INPUT_PATH, 'r') as f:
+    with open(TEST_INPUT_PATH, 'rb') as f:
         pdc = f.read()
-    with open(INPUT_PATH, 'w') as f:
+    with open(INPUT_PATH, 'wb') as f:
         f.write(pdc)
         f.flush()
     time.sleep(1)
