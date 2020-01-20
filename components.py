@@ -56,13 +56,18 @@ class Program(Component):
         return output
 
 # TODO: Local variables / constants
+# TODO: Actual scope handling
 class Scope(Component):
     def __init__(self):
         super().__init__()
 
-    def parse(self, tokens):
-        variable_scope = VariableScope()
+    def parse(self, tokens, variable_scope=None):
+        if variable_scope is None:
+            variable_scope = VariableScope()
         while len(tokens) > 0:
+            next_tok = tokens[0]
+            if isinstance(next_tok, EndifKeyword):
+                break
             statement = Statement()
             statement.parse(tokens, variable_scope)
             self.components.append(statement)
@@ -107,6 +112,31 @@ class Statement(Component):
         for component in self.components:
             output += component.generate_code(indents)
         return output
+
+class IfStatement(Component):
+    def __init__(self):
+        super().__init__()
+    
+    def parse(self, tokens, variable_scope):
+        token = tokens.popleft() # IfKeyword
+        if not isinstance(token, IfKeyword):
+            raise ParseError("Expected IfKeyword")
+        expression = LogicalOrExpression() # Expression
+        expression.parse(tokens, variable_scope)
+        if expression.get_type() != "BOOLEAN":
+            raise ParseError(f"IF statement expected BOOLEAN, got {expression.get_type()} instead")
+        self.components.append(expression)
+        while isinstance(tokens[0], LineSep):
+            tokens.popleft()
+        token = tokens.popleft() # ThenKeyword
+        if not isinstance(token, ThenKeyword):
+            raise ParseError("Expected ThenKeyword")
+        scope = Scope()
+        scope.parse(tokens, variable_scope)
+        self.components.append(scope)
+        token = tokens.popleft() # EndifKeyword
+        if not isinstance(tokens[0], EndifKeyword):
+            raise ParseError("Expected EndifKeyword")
 
 class OutputStatement(Component):
     def __init__(self):

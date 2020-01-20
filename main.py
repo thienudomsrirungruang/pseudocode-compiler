@@ -10,12 +10,12 @@ class LexError(Exception):
         self.message = message
 
 def read_from_file(filename):
-    with open(filename, 'r') as f:
-        return f.read()
+    with open(filename, 'rb') as f:
+        return f.read().decode('utf-8')
 
 def write_to_file(filename, contents):
-    with open(filename, 'w') as f:
-        f.write(contents)
+    with open(filename, 'wb') as f:
+        f.write(contents.encode('utf-8'))
 
 # first step: converts pseudocode into a queue of components.Token()
 # raises LexError if it cannot be tokenised.
