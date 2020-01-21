@@ -164,7 +164,7 @@ class ThenKeyword(Keyword):
         super().__init__()
         self.regex = re.compile("^\s* (THEN)([^0-9a-zA-Z](?:.|\n)*)$")
 
-class Endif(Keyword):
+class EndifKeyword(Keyword):
     def __init__(self):
         super().__init__()
         self.regex = re.compile("^\s* (ENDIF)([^0-9a-zA-Z](?:.|\n)*)$")

@@ -98,8 +98,12 @@ class Statement(Component):
             assign_variable_statement = AssignVariableStatement()
             assign_variable_statement.parse(tokens, variable_scope)
             self.components.append(assign_variable_statement)
+        elif isinstance(next_tok, IfKeyword):
+            if_statement = IfStatement()
+            if_statement.parse(tokens, variable_scope)
+            self.components.append(if_statement)
         elif not isinstance(next_tok, LineSep) and not isinstance(next_tok, Comment):
-            raise ParseError("Expected OutputKeyword or DeclareKeyword or Identifier or LineSep or Comment")
+            raise ParseError("Expected IfKeyword or OutputKeyword or DeclareKeyword or Identifier or LineSep or Comment")
         token = tokens[0]
         if isinstance(token, Comment):
             tokens.popleft() # Comment
@@ -135,8 +139,11 @@ class IfStatement(Component):
         scope.parse(tokens, variable_scope)
         self.components.append(scope)
         token = tokens.popleft() # EndifKeyword
-        if not isinstance(tokens[0], EndifKeyword):
+        if not isinstance(token, EndifKeyword):
             raise ParseError("Expected EndifKeyword")
+    
+    def generate_code(self, indents=0):
+        pass
 
 class OutputStatement(Component):
     def __init__(self):
