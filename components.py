@@ -112,10 +112,14 @@ class Statement(Component):
             raise ParseError("Expected LineSep")
     
     def generate_code(self, indents=0):
-        output = "    " * indents
-        for component in self.components:
-            output += component.generate_code(indents)
-        return output
+        if len(self.components) > 0:
+            print(f"Statement (child: {self.components[0]}) generate_code({indents})")
+            output = "    " * indents
+            for component in self.components:
+                output += component.generate_code(indents)
+            return output
+        else:
+            return ''
 
 class IfStatement(Component):
     def __init__(self):
@@ -143,6 +147,7 @@ class IfStatement(Component):
             raise ParseError("Expected EndifKeyword")
     
     def generate_code(self, indents=0):
+        print(f"IfStatement generate_code({indents})")
         output = "if "
         output += self.components[0].generate_code()
         output += ":\n"
