@@ -77,6 +77,9 @@ class Scope(Component):
         output = ""
         for component in self.components:
             output += component.generate_code(indents)
+        # fix "expected an indented block" python error
+        if output == "":
+            output = "    " * indents + "pass"
         return output
 
 class Statement(Component):
@@ -113,7 +116,6 @@ class Statement(Component):
     
     def generate_code(self, indents=0):
         if len(self.components) > 0:
-            print(f"Statement (child: {self.components[0]}) generate_code({indents})")
             output = "    " * indents
             for component in self.components:
                 output += component.generate_code(indents)
@@ -147,7 +149,6 @@ class IfStatement(Component):
             raise ParseError("Expected EndifKeyword")
     
     def generate_code(self, indents=0):
-        print(f"IfStatement generate_code({indents})")
         output = "if "
         output += self.components[0].generate_code()
         output += ":\n"
