@@ -255,6 +255,12 @@ class LogicalOrExpression(Component):
                 output += ")"
         return output
 
+    def __repr__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
+
+    def __str__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
+
 class LogicalAndExpression(Component):
     def __init__(self):
         super().__init__()
@@ -291,6 +297,12 @@ class LogicalAndExpression(Component):
                 output += self.components[i+1].generate_code()
                 output += ")"
         return output
+
+    def __repr__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
+
+    def __str__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
 
 class EqualityExpression(Component):
     def __init__(self):
@@ -329,6 +341,12 @@ class EqualityExpression(Component):
                 output += self.components[i+1].generate_code()
                 output += ")"
         return output
+
+    def __repr__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
+
+    def __str__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
 
 class RelationalExpression(Component):
     def __init__(self):
@@ -380,6 +398,12 @@ class RelationalExpression(Component):
                 output += self.components[i+1].generate_code()
                 output += ")"
         return output
+
+    def __repr__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
+
+    def __str__(self):
+        return f"{self.__class__.__name__} type {self.get_type()}"
 
 class AdditiveExpression(Component):
     def __init__(self):
