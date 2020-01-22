@@ -143,7 +143,11 @@ class IfStatement(Component):
             raise ParseError("Expected EndifKeyword")
     
     def generate_code(self, indents=0):
-        pass
+        output = "if "
+        output += self.components[0].generate_code()
+        output += ":\n"
+        output += self.components[1].generate_code(indents + 1)
+        return output
 
 class OutputStatement(Component):
     def __init__(self):
