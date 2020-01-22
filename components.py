@@ -79,7 +79,7 @@ class Scope(Component):
             output += component.generate_code(indents)
         # fix "expected an indented block" python error
         if output == "":
-            output = "    " * indents + "pass"
+            output = "    " * indents + "pass\n"
         return output
 
 class Statement(Component):
