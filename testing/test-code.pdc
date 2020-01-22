@@ -116,3 +116,18 @@ IF 2 = 3
   THEN
     OUTPUT "baz"
 ENDIF
+// Nested + empty IF
+IF TRUE
+  THEN
+    OUTPUT 1
+    IF TRUE
+      THEN
+        OUTPUT 2
+    ENDIF
+    IF FALSE
+      THEN
+    ENDIF
+ENDIF
+IF TRUE
+  THEN
+ENDIF
