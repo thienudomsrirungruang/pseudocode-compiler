@@ -69,3 +69,5 @@ False
 True
 Hello
 c
+foo
+bar

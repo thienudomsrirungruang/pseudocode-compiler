@@ -103,3 +103,16 @@ OUTPUT a + b
 OUTPUT bOoLeAnVaR1 AND bOoLeAnVaR1
 OUTPUT Hello
 OUTPUT MyChar
+
+// IF statements
+IF TRUE THEN
+    OUTPUT "foo"
+ENDIF
+IF TRUE
+  THEN
+    OUTPUT "bar"
+ENDIF
+IF 2 = 3
+  THEN
+    OUTPUT "baz"
+ENDIF
