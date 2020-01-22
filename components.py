@@ -151,7 +151,7 @@ class IfStatement(Component):
     def generate_code(self, indents=0):
         output = "if "
         output += self.components[0].generate_code()
-        output += ":\n"
+        output += ".value:\n"
         output += self.components[1].generate_code(indents + 1)
         return output
 
