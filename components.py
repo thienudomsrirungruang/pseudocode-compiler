@@ -90,6 +90,10 @@ class Statement(Component):
             output_statement = OutputStatement()
             output_statement.parse(tokens, variable_scope)
             self.components.append(output_statement)
+        elif isinstance(next_tok, InputKeyword):
+            input_statement = InputStatement()
+            input_statement.parse(tokens, variable_scope)
+            self.components.append(input_statement)
         elif isinstance(next_tok, DeclareKeyword):
             declare_variable_statement = DeclareVariableStatement()
             declare_variable_statement.parse(tokens, variable_scope)
@@ -103,7 +107,7 @@ class Statement(Component):
             if_statement.parse(tokens, variable_scope)
             self.components.append(if_statement)
         elif not isinstance(next_tok, LineSep) and not isinstance(next_tok, Comment):
-            raise ParseError("Expected IfKeyword or OutputKeyword or DeclareKeyword or Identifier or LineSep or Comment")
+            raise ParseError("Expected IfKeyword or OutputKeyword or InputKeyword or DeclareKeyword or Identifier or LineSep or Comment")
         token = tokens[0]
         if isinstance(token, Comment):
             tokens.popleft() # Comment
@@ -183,6 +187,29 @@ class OutputStatement(Component):
         output += "print("
         output += self.components[0].generate_code()
         output += ".value)\n"
+        return output
+
+class InputStatement(Component):
+    def __init__(self):
+        super().__init__()
+    
+    def parse(self, tokens, variable_scope):
+        token = tokens.popleft() # InputKeyword
+        if not isinstance(token, InputKeyword):
+            raise ParseError("Expected InputKeyword")
+        token = tokens.popleft() # Identifier
+        if not isinstance(token, Identifier):
+            raise ParseError("Expected Identifier")
+        identifier = token.value
+        self.variable = variable_scope.get(identifier)
+        self.variable.assigned = True
+    
+    def generate_code(self, indents=0):
+        output = "    " * indents
+        output += self.variable.identifier
+        output += "=_INPUT('"
+        output += self.variable.datatype
+        output += "')\n"
         return output
 
 class DeclareVariableStatement(Component):

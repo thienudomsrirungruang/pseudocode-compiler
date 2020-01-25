@@ -174,6 +174,11 @@ class EndifKeyword(Keyword):
         super().__init__()
         self.regex = re.compile("^\s* (ENDIF)([^0-9a-zA-Z](?:.|\n)*)$")
 
+class InputKeyword(Keyword):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s* (INPUT)([^0-9a-zA-Z](?:.|\n)*)$")
+
 class Literal(Token):
     def __init__(self):
         super().__init__()
@@ -191,6 +196,7 @@ class Datatype(Keyword):
 
 TOKEN_LIST = [LineSep,
                 Comment, OutputKeyword, DeclareKeyword, IfKeyword, ThenKeyword, ElseKeyword, EndifKeyword,
+                InputKeyword,
                 Literal, Datatype,
                 LogicalAnd, LogicalOr, LogicalNot, Div, Mod,
                 Multiply, Divide, Plus, Minus, Colon, Arrow,

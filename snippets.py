@@ -1,6 +1,7 @@
 # TODO: logical not
 header = \
-"""class _PrimitiveType:
+"""import re
+class _PrimitiveType:
     pass
 
 class INTEGER(_PrimitiveType):
@@ -191,6 +192,27 @@ class BOOLEAN(_PrimitiveType):
         return BOOLEAN(self.value == other.value)
     def not_equals(self, other):
         return BOOLEAN(self.value != other.value)
+def _INPUT(datatype):
+    datatype_regexes = {
+        "INTEGER": re.compile("^\d*$"),
+        "REAL": re.compile("^\d*\.\d+|\d+\.\d*|\d+$"),
+        "STRING": re.compile("^.*$"),
+        "CHAR": re.compile("^.$"),
+        "BOOLEAN": re.compile("TRUE|FALSE")
+    }
+    i = input(f"Enter {datatype}: ")
+    while not re.search(datatype_regexes[datatype], i):
+        i = input(f"Enter {datatype}: ")
+    if datatype == "INTEGER":
+        return INTEGER(int(i))
+    if datatype == "REAL":
+        return REAL(float(i))
+    if datatype == "STRING":
+        return STRING(i)
+    if datatype == "CHAR":
+        return CHAR(i)
+    if datatype == "BOOLEAN":
+        return BOOLEAN(i == "TRUE")
 """
 
 #TODO: DATE
