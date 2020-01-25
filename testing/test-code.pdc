@@ -131,3 +131,13 @@ ENDIF
 IF TRUE
   THEN
 ENDIF
+
+// ELSE keyword
+DECLARE s : STRING
+s ← "bar"
+IF s = "foo"
+  THEN
+    OUTPUT "s is foo"
+  ELSE
+    OUTPUT "s is not foo"
+ENDIF
