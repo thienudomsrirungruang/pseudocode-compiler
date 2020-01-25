@@ -3,7 +3,6 @@ header = \
 """import re
 class _PrimitiveType:
     pass
-
 class INTEGER(_PrimitiveType):
     def __init__(self, value):
         if isinstance(value, _PrimitiveType):
