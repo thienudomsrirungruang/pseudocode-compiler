@@ -164,6 +164,11 @@ class ThenKeyword(Keyword):
         super().__init__()
         self.regex = re.compile("^\s* (THEN)([^0-9a-zA-Z](?:.|\n)*)$")
 
+class ElseKeyword(Keyword):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s* (ELSE)([^0-9a-zA-Z](?:.|\n)*)$")
+
 class EndifKeyword(Keyword):
     def __init__(self):
         super().__init__()
@@ -185,7 +190,8 @@ class Datatype(Keyword):
         self.regex = re.compile("^\s* (INTEGER|STRING|REAL|CHAR|BOOLEAN)([^0-9a-zA-Z](?:.|\n)*)$")
 
 TOKEN_LIST = [LineSep,
-                Comment, OutputKeyword, DeclareKeyword, IfKeyword, ThenKeyword, EndifKeyword, Literal, Datatype,
+                Comment, OutputKeyword, DeclareKeyword, IfKeyword, ThenKeyword, ElseKeyword, EndifKeyword,
+                Literal, Datatype,
                 LogicalAnd, LogicalOr, LogicalNot, Div, Mod,
                 Multiply, Divide, Plus, Minus, Colon, Arrow,
                 NotEqual, LessThanEqual, MoreThanEqual, LessThan, MoreThan, Equal,

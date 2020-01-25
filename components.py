@@ -64,7 +64,7 @@ class Scope(Component):
             variable_scope = VariableScope()
         while len(tokens) > 0:
             next_tok = tokens[0]
-            if isinstance(next_tok, EndifKeyword):
+            if isinstance(next_tok, EndifKeyword) or isinstance(next_tok, ElseKeyword):
                 break
             statement = Statement()
             statement.parse(tokens, variable_scope)
@@ -123,6 +123,7 @@ class Statement(Component):
 class IfStatement(Component):
     def __init__(self):
         super().__init__()
+        self.has_else = False
     
     def parse(self, tokens, variable_scope):
         variable_scope = VariableScope(variable_scope)
@@ -142,7 +143,15 @@ class IfStatement(Component):
         scope = Scope()
         scope.parse(tokens, variable_scope)
         self.components.append(scope)
-        token = tokens.popleft() # EndifKeyword
+        token = tokens.popleft() # EndifKeyword OR ElseKeyword
+        if isinstance(token, ElseKeyword):
+            scope = Scope()
+            scope.parse(tokens, variable_scope)
+            self.components.append(scope)
+            self.has_else = True
+            token = tokens.popleft() # EndifKeyword
+        # Note: the pseudocode spec doesn't actually have an "else if" keyword. Might add it later, though.
+        # TODO: ELIF
         if not isinstance(token, EndifKeyword):
             raise ParseError("Expected EndifKeyword")
     
@@ -152,6 +161,9 @@ class IfStatement(Component):
         output += self.components[0].generate_code()
         output += ".value:\n"
         output += self.components[1].generate_code(indents + 1)
+        if self.has_else:
+            output += "else:\n"
+            output += self.components[2].generate_code(indents + 1)
         return output
 
 class OutputStatement(Component):
