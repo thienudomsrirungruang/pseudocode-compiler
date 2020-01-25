@@ -15,7 +15,6 @@ class VariableScope():
         self.variables[variable.identifier] = variable
 
     def exists(self, identifier):
-        print(f"exists({identifier}, {self.get_all_scope_variables().keys()})")
         return identifier in self.get_all_scope_variables().keys()
     
     def get(self, identifier):

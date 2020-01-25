@@ -69,7 +69,6 @@ class Scope(Component):
             statement = Statement()
             statement.parse(tokens, variable_scope)
             self.components.append(statement)
-        print(f'variable_scope {variable_scope}')
     
     def generate_code(self, indents=0):
         output = ""
