@@ -55,8 +55,6 @@ class Program(Component):
         output = self.components[0].generate_code()
         return output
 
-# TODO: Local variables / constants
-# TODO: Actual scope handling
 class Scope(Component):
     def __init__(self):
         super().__init__()
@@ -116,7 +114,7 @@ class Statement(Component):
     
     def generate_code(self, indents=0):
         if len(self.components) > 0:
-            output = "    " * indents
+            output = ""
             for component in self.components:
                 output += component.generate_code(indents)
             return output
@@ -128,6 +126,7 @@ class IfStatement(Component):
         super().__init__()
     
     def parse(self, tokens, variable_scope):
+        variable_scope = VariableScope(variable_scope)
         token = tokens.popleft() # IfKeyword
         if not isinstance(token, IfKeyword):
             raise ParseError("Expected IfKeyword")
@@ -149,7 +148,8 @@ class IfStatement(Component):
             raise ParseError("Expected EndifKeyword")
     
     def generate_code(self, indents=0):
-        output = "if "
+        output = "    " * indents
+        output += "if "
         output += self.components[0].generate_code()
         output += ".value:\n"
         output += self.components[1].generate_code(indents + 1)
@@ -168,7 +168,8 @@ class OutputStatement(Component):
         self.components.append(expression)
 
     def generate_code(self, indents=0):
-        output = "print("
+        output = "    " * indents
+        output += "print("
         output += self.components[0].generate_code()
         output += ".value)\n"
         return output
@@ -220,7 +221,8 @@ class AssignVariableStatement(Component):
         self.variable.assigned = True
     
     def generate_code(self, indents=0):
-        output = self.identifier.value
+        output = "    " * indents
+        output += self.identifier.value
         output += "="
         output += self.variable.datatype
         output += "("
