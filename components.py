@@ -181,12 +181,24 @@ class OutputStatement(Component):
         expression = LogicalOrExpression() # Expression
         expression.parse(tokens, variable_scope)
         self.components.append(expression)
+        next_tok = tokens[0]
+        while isinstance(next_tok, Comma):
+            tokens.popleft()
+            expression = LogicalOrExpression() # Expression
+            expression.parse(tokens, variable_scope)
+            self.components.append(expression)
+            next_tok = tokens[0]
 
     def generate_code(self, indents=0):
         output = "    " * indents
         output += "print("
         output += self.components[0].generate_code()
-        output += ".value)\n"
+        output += ".strvalue()"
+        for component in self.components[1:]:
+            output += "+"
+            output += component.generate_code()
+            output += ".strvalue()"
+        output += ")\n"
         return output
 
 class InputStatement(Component):

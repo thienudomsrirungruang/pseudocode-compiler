@@ -2,7 +2,10 @@
 header = \
 """import re
 class _PrimitiveType:
-    pass
+    def strvalue(self):
+        pass
+    def copy(self):
+        pass
 class INTEGER(_PrimitiveType):
     def __init__(self, value):
         if isinstance(value, _PrimitiveType):
@@ -13,6 +16,8 @@ class INTEGER(_PrimitiveType):
         if not isinstance(value, int):
             raise TypeError(f"INTEGER expected, got {value} instead")
         self.value = value
+    def strvalue(self):
+        return str(self.value)
     def copy(self):
         return INTEGER(self.value)
     def negative(self):
@@ -88,6 +93,8 @@ class REAL(_PrimitiveType):
         if not isinstance(value, float):
             raise TypeError(f"REAL expected, got {value} instead")
         self.value = value
+    def strvalue(self):
+        return str(self.value)
     def copy(self):
         return REAL(self.value)
     def negative(self):
@@ -145,6 +152,8 @@ class STRING(_PrimitiveType):
         if not isinstance(value, str):
             raise TypeError(f"STRING expected, got {value} instead")
         self.value = value
+    def strvalue(self):
+        return self.value
     def copy(self):
         return STRING(self.value)
     def equals(self, other):
@@ -160,6 +169,8 @@ class CHAR(_PrimitiveType):
         if len(value) != 1:
             raise TypeError(f"STRING expected, got {value} instead")
         self.value = value
+    def strvalue(self):
+        return self.value
     def copy(self):
         return CHAR(self.value)
     def equals(self, other):
@@ -173,6 +184,8 @@ class BOOLEAN(_PrimitiveType):
         if not isinstance(value, bool):
             raise TypeError(f"BOOLEAN expected, got {value} instead")
         self.value = value
+    def strvalue(self):
+        return "TRUE" if self.value else "FALSE"
     def copy(self):
         return BOOLEAN(self.value)
     def logical_or(self, other):
