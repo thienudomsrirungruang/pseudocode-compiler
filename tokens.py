@@ -128,6 +128,12 @@ class Comma(Token):
         self.allow_trailing_space = True
         self.regex = re.compile("^\s*(,)((?:.|\n)*)$")
 
+class Ampersand(Token):
+    def __init__(self):
+        super().__init__()
+        self.allow_trailing_space = True
+        self.regex = re.compile("^\s*(&)((?:.|\n)*)$")
+
 class Arrow(Token):
     def __init__(self):
         super().__init__()
@@ -205,7 +211,7 @@ TOKEN_LIST = [LineSep,
                 InputKeyword,
                 Literal, Datatype,
                 LogicalAnd, LogicalOr, LogicalNot, Div, Mod,
-                Multiply, Divide, Plus, Minus, Colon, Comma, Arrow,
+                Multiply, Divide, Plus, Minus, Colon, Comma, Ampersand, Arrow,
                 NotEqual, LessThanEqual, MoreThanEqual, LessThan, MoreThan, Equal,
                 LeftBracket, RightBracket,
                 Identifier] # leftmost takes priority

@@ -471,6 +471,7 @@ class AdditiveExpression(Component):
     def __init__(self):
         super().__init__()
         self.type = None
+        self.exprtype = None
 
     def get_type(self):
         return self.type
@@ -481,33 +482,57 @@ class AdditiveExpression(Component):
         self.components.append(term)
         self.type = term.get_type()
         next_tok = tokens[0]
-        while isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
-            if self.type not in ("INTEGER", "REAL"):
-                raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
-            binaryop = BinaryOp() # BinaryOp
-            binaryop.parse(tokens, variable_scope)
-            self.components.append(binaryop)
-            term = Term() # Term
-            term.parse(tokens, variable_scope)
-            self.components.append(term)
-            if term.get_type() not in ("INTEGER", "REAL"):
-                raise ParseError(f"INTEGER or REAL expected, got {term.type} instead")
-            if term.get_type() == "REAL":
-                self.type = "REAL"
-            next_tok = tokens[0]
-    
+        if isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
+            self.exprtype = "numeric"
+            while isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
+                if self.type not in ("INTEGER", "REAL"):
+                    raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
+                binaryop = BinaryOp() # BinaryOp
+                binaryop.parse(tokens, variable_scope)
+                self.components.append(binaryop)
+                term = Term() # Term
+                term.parse(tokens, variable_scope)
+                self.components.append(term)
+                if term.get_type() not in ("INTEGER", "REAL"):
+                    raise ParseError(f"INTEGER or REAL expected, got {term.type} instead")
+                if term.get_type() == "REAL":
+                    self.type = "REAL"
+                next_tok = tokens[0]
+        elif isinstance(next_tok, Ampersand):
+            self.exprtype = "string"
+            if self.type not in ("STRING", "CHAR"):
+                raise ParseError(f"STRING or CHAR expected, got {self.type} instead")
+            while isinstance(next_tok, Ampersand):
+                self.type = "STRING"
+                binaryop = BinaryOp() # BinaryOp
+                binaryop.parse(tokens, variable_scope)
+                self.components.append(binaryop)
+                term = Term() # Term
+                term.parse(tokens, variable_scope)
+                self.components.append(term)
+                if term.get_type() not in ("STRING", "CHAR"):
+                    raise ParseError(f"STRING or CHAR expected, got {term.type} instead")
+                next_tok = tokens[0]
+
     def generate_code(self, indents=0):
         output = ""
         output += self.components[0].generate_code()
-        for i in range(1, len(self.components), 2):
-            if self.components[i].value == "+": # BinaryOp
-                output += ".add("
-                output += self.components[i+1].generate_code()
-                output += ")"
-            elif self.components[i].value == "-": # BinaryOp
-                output += ".subtract("
-                output += self.components[i+1].generate_code()
-                output += ")"
+        if self.exprtype == "numeric":
+            for i in range(1, len(self.components), 2):
+                if self.components[i].value == "+": # BinaryOp
+                    output += ".add("
+                    output += self.components[i+1].generate_code()
+                    output += ")"
+                elif self.components[i].value == "-": # BinaryOp
+                    output += ".subtract("
+                    output += self.components[i+1].generate_code()
+                    output += ")"
+        elif self.exprtype == "string":
+            for i in range(1, len(self.components), 2):
+                if self.components[i].value == "&": # BinaryOp
+                    output += ".concat("
+                    output += self.components[i+1].generate_code()
+                    output += ")"
         return output
 
     def __repr__(self):

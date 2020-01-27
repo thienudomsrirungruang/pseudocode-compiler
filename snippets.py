@@ -156,6 +156,8 @@ class STRING(_PrimitiveType):
         return self.value
     def copy(self):
         return STRING(self.value)
+    def concat(self, other):
+        return STRING(self.value + other.value)
     def equals(self, other):
         return BOOLEAN(self.value == other.value)
     def not_equals(self, other):
@@ -173,6 +175,8 @@ class CHAR(_PrimitiveType):
         return self.value
     def copy(self):
         return CHAR(self.value)
+    def concat(self, other):
+        return STRING(self.value + other.value)
     def equals(self, other):
         return BOOLEAN(self.value == other.value)
     def not_equals(self, other):
