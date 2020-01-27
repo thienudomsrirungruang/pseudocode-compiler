@@ -1,6 +1,7 @@
 import re
 from tokens import *
 from objects import *
+from utils import *
 
 class ParseError(Exception):
     def __init__(self, message):
@@ -64,7 +65,7 @@ class Scope(Component):
             variable_scope = VariableScope()
         while len(tokens) > 0:
             next_tok = tokens[0]
-            if isinstance(next_tok, EndifKeyword) or isinstance(next_tok, ElseKeyword):
+            if contains_instance(next_tok, (EndifKeyword, ElseKeyword)):
                 break
             statement = Statement()
             statement.parse(tokens, variable_scope)
@@ -380,7 +381,7 @@ class EqualityExpression(Component):
         self.components.append(relational_exp)
         self.type = relational_exp.get_type()
         next_tok = tokens[0]
-        while isinstance(next_tok, Equal) or isinstance(next_tok, NotEqual):
+        while contains_instance(next_tok, (Equal, NotEqual)):
             self.type = "BOOLEAN"
             binaryop = BinaryOp() # BinaryOp
             binaryop.parse(tokens, variable_scope)
@@ -424,11 +425,11 @@ class RelationalExpression(Component):
         self.components.append(additive_exp)
         self.type = additive_exp.get_type()
         next_tok = tokens[0]
-        if isinstance(next_tok, LessThanEqual) or isinstance(next_tok, MoreThanEqual) or isinstance(next_tok, MoreThan) or isinstance(next_tok, LessThan):
+        if contains_instance(next_tok, (LessThanEqual, MoreThanEqual, MoreThan, LessThan)):
             if self.type not in ("INTEGER", "REAL"):
                 raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
             self.type = "BOOLEAN"
-        while isinstance(next_tok, LessThanEqual) or isinstance(next_tok, MoreThanEqual) or isinstance(next_tok, MoreThan) or isinstance(next_tok, LessThan):
+        while contains_instance(next_tok, (LessThanEqual, MoreThanEqual, MoreThan, LessThan)):
             binaryop = BinaryOp() # BinaryOp
             binaryop.parse(tokens, variable_scope)
             self.components.append(binaryop)
@@ -482,9 +483,9 @@ class AdditiveExpression(Component):
         self.components.append(term)
         self.type = term.get_type()
         next_tok = tokens[0]
-        if isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
+        if contains_instance(next_tok, (Plus, Minus)):
             self.exprtype = "numeric"
-            while isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
+            while contains_instance(next_tok, (Plus, Minus)):
                 if self.type not in ("INTEGER", "REAL"):
                     raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
                 binaryop = BinaryOp() # BinaryOp
@@ -555,8 +556,8 @@ class Term(Component):
         self.components.append(factor)
         self.type = factor.get_type()
         next_tok = tokens[0]
-        while isinstance(next_tok, Multiply) or isinstance(next_tok, Divide) or isinstance(next_tok, Div) or isinstance(next_tok, Mod):
-            if isinstance(next_tok, Multiply) or isinstance(next_tok, Divide):
+        while contains_instance(next_tok, (Multiply, Divide, Div, Mod)):
+            if contains_instance(next_tok, (Multiply, Divide)):
                 if self.type not in ("INTEGER", "REAL"):
                     raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
             else:
@@ -629,7 +630,7 @@ class Factor(Component):
             self.components.append(expr)
             self.exprtype = "bracket"
             self.type = expr.get_type()
-        elif isinstance(next_tok, Plus) or isinstance(next_tok, Minus) or isinstance(next_tok, LogicalNot):
+        elif contains_instance(next_tok, (Plus, Minus, LogicalNot)):
             uop = UnaryOp() # UnaryOp
             uop.parse(tokens, variable_scope)
             self.components.append(uop)
@@ -638,7 +639,7 @@ class Factor(Component):
             self.components.append(factor)
             self.exprtype = "unary_op"
             self.type = factor.get_type()
-            if isinstance(next_tok, Plus) or isinstance(next_tok, Minus):
+            if contains_instance(next_tok, (Plus, Minus)):
                 if self.type not in ("INTEGER", "REAL"):
                     raise ParseError(f"Expected INTEGER or REAL, got {self.type} instead")
             elif isinstance(next_tok, LogicalNot):

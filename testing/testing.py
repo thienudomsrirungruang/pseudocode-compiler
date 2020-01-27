@@ -23,13 +23,13 @@ if __name__ == '__main__':
     with open(INPUT_PATH, 'wb') as f:
         f.write(pdc)
         f.flush()
-    time.sleep(1)
+    time.sleep(3)
 
     # run the program
     print("Running the program...")
     proc = subprocess.Popen([sys.executable, EXEC_PATH], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    time.sleep(1)
+    time.sleep(3)
 
     # run the compiled program
     print("Running the compiled program...")
