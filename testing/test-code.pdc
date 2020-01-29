@@ -141,3 +141,7 @@ IF s = "foo"
   ELSE
     OUTPUT "s is not foo"
 ENDIF
+
+// STRING manip
+OUTPUT "foo",'b',TRUE,19,.3
+OUTPUT "somebody"&'o'&"nce"
