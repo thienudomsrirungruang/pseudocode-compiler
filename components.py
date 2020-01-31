@@ -65,7 +65,7 @@ class Scope(Component):
             variable_scope = VariableScope()
         while len(tokens) > 0:
             next_tok = tokens[0]
-            if contains_instance(next_tok, (EndifKeyword, ElseKeyword)):
+            if contains_instance(next_tok, SCOPE_ENDERS):
                 break
             statement = Statement()
             statement.parse(tokens, variable_scope)
@@ -107,6 +107,10 @@ class Statement(Component):
             if_statement = IfStatement()
             if_statement.parse(tokens, variable_scope)
             self.components.append(if_statement)
+        elif isinstance(next_tok, WhileKeyword):
+            while_statement = WhileStatement()
+            while_statement.parse(tokens, variable_scope)
+            self.components.append(while_statement)
         elif not isinstance(next_tok, LineSep) and not isinstance(next_tok, Comment):
             raise ParseError("Expected IfKeyword or OutputKeyword or InputKeyword or DeclareKeyword or Identifier or LineSep or Comment")
         token = tokens[0]
@@ -169,6 +173,39 @@ class IfStatement(Component):
         if self.has_else:
             output += "else:\n"
             output += self.components[2].generate_code(indents + 1)
+        return output
+
+class WhileStatement(Component):
+    def __init__(self):
+        super().__init__()
+    
+    def parse(self, tokens, variable_scope):
+        token = tokens.popleft() # WhileKeyword
+        if not isinstance(token, WhileKeyword):
+            raise ParseError("Expected WhileKeyword")
+        expression = LogicalOrExpression() # Expression
+        expression.parse(tokens, variable_scope)
+        if expression.get_type() != "BOOLEAN":
+            raise ParseError(f"WHILE statement expected BOOLEAN, got {expression.get_type()} instead")
+        self.components.append(expression)
+        while isinstance(tokens[0], LineSep):
+            tokens.popleft()
+        token = tokens.popleft() # DoKeyword
+        if not isinstance(token, DoKeyword):
+            raise ParseError("Expected DoKeyword")
+        scope = Scope()
+        scope.parse(tokens, variable_scope)
+        self.components.append(scope)
+        token = tokens.popleft() # EndwhileKeyword
+        if not isinstance(token, EndwhileKeyword):
+            raise ParseError("Expected EndwhileKeyword")
+
+    def generate_code(self, indents=0):
+        output = "    " * indents
+        output += "while "
+        output += self.components[0].generate_code()
+        output += ".value:\n"
+        output += self.components[1].generate_code(indents + 1)
         return output
 
 class OutputStatement(Component):

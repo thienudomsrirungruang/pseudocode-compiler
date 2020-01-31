@@ -186,6 +186,21 @@ class EndifKeyword(Keyword):
         super().__init__()
         self.regex = re.compile("^\s* (ENDIF)([^0-9a-zA-Z](?:.|\n)*)$")
 
+class WhileKeyword(Keyword):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s* (WHILE)([^0-9a-zA-Z](?:.|\n)*)$")
+
+class DoKeyword(Keyword):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s* (DO)([^0-9a-zA-Z](?:.|\n)*)$")
+
+class EndwhileKeyword(Keyword):
+    def __init__(self):
+        super().__init__()
+        self.regex = re.compile("^\s* (ENDWHILE)([^0-9a-zA-Z](?:.|\n)*)$")
+
 class InputKeyword(Keyword):
     def __init__(self):
         super().__init__()
@@ -208,6 +223,7 @@ class Datatype(Keyword):
 
 TOKEN_LIST = [LineSep,
                 Comment, OutputKeyword, DeclareKeyword, IfKeyword, ThenKeyword, ElseKeyword, EndifKeyword,
+                WhileKeyword, DoKeyword, EndwhileKeyword,
                 InputKeyword,
                 Literal, Datatype,
                 LogicalAnd, LogicalOr, LogicalNot, Div, Mod,
@@ -215,3 +231,5 @@ TOKEN_LIST = [LineSep,
                 NotEqual, LessThanEqual, MoreThanEqual, LessThan, MoreThan, Equal,
                 LeftBracket, RightBracket,
                 Identifier] # leftmost takes priority
+
+SCOPE_ENDERS = [EndifKeyword, ElseKeyword, EndwhileKeyword]
