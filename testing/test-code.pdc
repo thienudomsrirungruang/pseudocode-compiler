@@ -145,3 +145,29 @@ ENDIF
 // STRING manip
 OUTPUT "foo",'b',TRUE,19,.3
 OUTPUT "somebody"&'o'&"nce"
+
+// WHILE loops
+DECLARE x : INTEGER
+x ← 1
+DECLARE y : INTEGER
+y ← 1
+WHILE x < 50
+  DO
+    OUTPUT x
+    DECLARE temp : INTEGER
+    temp ← y
+    y ← x + y
+    x ← temp
+ENDWHILE
+
+// FOR loops
+
+FOR i ← 0 TO 4
+    OUTPUT i
+ENDFOR i
+
+FOR i ← 0 TO 4 STEP 2
+    OUTPUT i
+ENDFOR i
+
+OUTPUT "Done!"
