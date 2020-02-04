@@ -229,6 +229,12 @@ def _INPUT(datatype):
         return CHAR(i)
     if datatype == "BOOLEAN":
         return BOOLEAN(i == "TRUE")
+def _RANGE(a, b, s=None):
+    if s is None: s = INTEGER(1)
+    if not (isinstance(a, INTEGER) and isinstance(b, INTEGER) and isinstance(s, INTEGER)):
+        raise TypeError("Expected inputs to _RANGE to be INTEGER")
+    for i in range(a.value, b.value + 1, s.value):
+        yield INTEGER(i)
 """
 
 #TODO: DATE

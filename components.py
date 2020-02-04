@@ -63,6 +63,8 @@ class Scope(Component):
     def parse(self, tokens, variable_scope=None):
         if variable_scope is None:
             variable_scope = VariableScope()
+        else:
+            variable_scope = VariableScope(variable_scope)
         while len(tokens) > 0:
             next_tok = tokens[0]
             if contains_instance(next_tok, SCOPE_ENDERS):
@@ -111,8 +113,12 @@ class Statement(Component):
             while_statement = WhileStatement()
             while_statement.parse(tokens, variable_scope)
             self.components.append(while_statement)
+        elif isinstance(next_tok, ForKeyword):
+            for_statement = ForStatement()
+            for_statement.parse(tokens, variable_scope)
+            self.components.append(for_statement)
         elif not isinstance(next_tok, LineSep) and not isinstance(next_tok, Comment):
-            raise ParseError("Expected IfKeyword or OutputKeyword or InputKeyword or DeclareKeyword or Identifier or LineSep or Comment")
+            raise ParseError("Expected Statement or LineSep or Comment")
         token = tokens[0]
         if isinstance(token, Comment):
             tokens.popleft() # Comment
@@ -206,6 +212,73 @@ class WhileStatement(Component):
         output += self.components[0].generate_code()
         output += ".value:\n"
         output += self.components[1].generate_code(indents + 1)
+        return output
+
+class ForStatement(Statement):
+    def __init__(self):
+        super().__init__()
+        self.has_step = False
+
+    def parse(self, tokens, variable_scope):
+        token = tokens.popleft() # ForKeyword
+        if not isinstance(token, ForKeyword):
+            raise ParseError("Expected ForKeyword")
+        token = tokens.popleft() # Identifier
+        if not isinstance(token, Identifier):
+            raise ParseError("Expected Identifier")
+        self.variable = Variable(token.value, "INTEGER")
+        self.variable.assigned = True
+        token = tokens.popleft() # Arrow
+        if not isinstance(token, Arrow):
+            raise ParseError("Expected Arrow")
+        expression = LogicalOrExpression() # Expression
+        expression.parse(tokens, variable_scope)
+        if expression.get_type() != "INTEGER":
+            raise ParseError(f"FOR statement expected INTEGER or REAL, got {expression.get_type()} instead")
+        self.components.append(expression)
+        token = tokens.popleft() # ToKeyword
+        if not isinstance(token, ToKeyword):
+            raise ParseError("Expected ToKeyword")
+        expression = LogicalOrExpression() # Expression
+        expression.parse(tokens, variable_scope)
+        if expression.get_type() != "INTEGER":
+            raise ParseError(f"FOR statement expected INTEGER or REAL, got {expression.get_type()} instead")
+        self.components.append(expression)
+        next_tok = tokens[0] # might be StepKeyword
+        if isinstance(next_tok, StepKeyword):
+            self.has_step = True
+            expression = LogicalOrExpression() # Expression
+            expression.parse(tokens, variable_scope)
+            if expression.get_type() != "INTEGER":
+                raise ParseError(f"FOR statement expected INTEGER or REAL, got {expression.get_type()} instead")
+            self.step = expression
+        scope = Scope()
+        new_var_scope = VariableScope(variable_scope)
+        new_var_scope.add(self.variable)
+        scope.parse(tokens, new_var_scope)
+        self.components.append(scope)
+        token = tokens.popleft() # EndforKeyword
+        if not isinstance(token, EndforKeyword):
+            raise ParseError("Expected EndforKeyword")
+        # The pseudocode spec allows for an identifier after the ENDFOR.
+        if isinstance(tokens[0], Identifier):
+            token = tokens.popleft() # Identifier
+            if not token.value == self.variable.identifier:
+                raise ParseError("Identifier after ENDFOR does not match the one in the FOR")
+
+    def generate_code(self, indents=0):
+        output = "    " * indents
+        output += "for "
+        output += self.variable.identifier
+        output += " in _RANGE("
+        output += self.components[0].generate_code()
+        output += ","
+        output += self.components[1].generate_code()
+        if self.has_step:
+            output += ","
+            output += self.step.generate_code()
+        output += "):\n"
+        output += self.components[2].generate_code(indents + 1)
         return output
 
 class OutputStatement(Component):

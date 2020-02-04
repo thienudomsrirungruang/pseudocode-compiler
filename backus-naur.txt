@@ -5,15 +5,21 @@
 <statement> ::= <output-statement> [<comment>] <newline>
               | <declare-variable-statement> [<comment>] <newline>
               | <assign-variable-statement> [<comment>] <newline>
+              | <if-statement> [<comment>] <newline>
               | [<comment>] <newline>
-<outputstatement> ::= "OUTPUT " <logical-or-exp>
+<output-statement> ::= "OUTPUT" <logical-or-exp>
+<input-statement> ::= "INPUT" <identifier>
 <declare-variable-statement> ::= "DECLARE" <identifier> ":" <datatype>
 <assign-variable-statement> ::= <identifier> "←" <logical-or-exp>
+<if-statement> ::= "IF" <logical-or-exp> [{<newline>}] "THEN" <scope> ["ELSE" <scope>] "ENDIF"
+<while-statement> ::= "WHILE" <logical-or-exp> [{<newline>}] "DO" <scope> "ENDWHILE"
+<for-statement> ::= "FOR" <identifier> "←" <logical-or-exp> "TO" <logical-or-exp> ["STEP" <logical-or-exp>]
+                        <scope> "ENDFOR" [<identifier>]
 <logical-or-exp> ::= <logical-and-exp> { "||" <logical-and-exp}
 <logical-and-exp> ::= <equality-exp> { "&&" <equality-exp> }
 <equality-exp> ::= <relational-exp> { "<>" | "=" <relational-exp> }
 <relational-exp> ::= <additive-exp> { "<" | ">" | "<=" | ">=" <additive-exp> }
-<additive-exp> ::= <term> {"+"|"-"  <term>}
+<additive-exp> ::= <term> {"+"|"-"|"&"  <term>}
 <term> ::= <factor> {"*"|"/"|"MOD"|"DIV"  <factor>}
 <factor> ::= "(" <logical-or-exp> ")"
            | <unaryop> <factor>
