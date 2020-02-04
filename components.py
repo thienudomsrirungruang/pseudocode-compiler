@@ -246,6 +246,7 @@ class ForStatement(Statement):
         self.components.append(expression)
         next_tok = tokens[0] # might be StepKeyword
         if isinstance(next_tok, StepKeyword):
+            tokens.popleft()
             self.has_step = True
             expression = LogicalOrExpression() # Expression
             expression.parse(tokens, variable_scope)
