@@ -1,4 +1,3 @@
-# TODO: logical not
 header = \
 """import re
 class _PrimitiveType:

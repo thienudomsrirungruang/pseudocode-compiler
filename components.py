@@ -821,7 +821,6 @@ class UnaryOp(Component):
     def __str__(self):
         return f"{self.__class__.__name__} value {repr(self.value)}"
 
-#TODO: string concat &
 class BinaryOp(Component):
     def __init__(self):
         super().__init__()
