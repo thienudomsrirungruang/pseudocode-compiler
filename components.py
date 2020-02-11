@@ -2,14 +2,7 @@ import re
 from tokens import *
 from objects import *
 from utils import *
-
-class ParseError(Exception):
-    def __init__(self, message):
-        self.message = message
-
-class TypeError(Exception):
-    def __init__(self, message):
-        self.message = message
+from datatypes import *
 
 class Component:
     def __init__(self):
@@ -147,7 +140,7 @@ class IfStatement(Component):
             raise ParseError("Expected IfKeyword")
         expression = LogicalOrExpression() # Expression
         expression.parse(tokens, variable_scope)
-        if expression.get_type() != "BOOLEAN":
+        if expression.get_type() != BooleanType:
             raise ParseError(f"IF statement expected BOOLEAN, got {expression.get_type()} instead")
         self.components.append(expression)
         while isinstance(tokens[0], LineSep):
@@ -191,7 +184,7 @@ class WhileStatement(Component):
             raise ParseError("Expected WhileKeyword")
         expression = LogicalOrExpression() # Expression
         expression.parse(tokens, variable_scope)
-        if expression.get_type() != "BOOLEAN":
+        if expression.get_type() != BooleanType:
             raise ParseError(f"WHILE statement expected BOOLEAN, got {expression.get_type()} instead")
         self.components.append(expression)
         while isinstance(tokens[0], LineSep):
@@ -226,14 +219,14 @@ class ForStatement(Statement):
         token = tokens.popleft() # Identifier
         if not isinstance(token, Identifier):
             raise ParseError("Expected Identifier")
-        self.variable = Variable(token.value, "INTEGER")
+        self.variable = Variable(token.value, IntegerType)
         self.variable.assigned = True
         token = tokens.popleft() # Arrow
         if not isinstance(token, Arrow):
             raise ParseError("Expected Arrow")
         expression = LogicalOrExpression() # Expression
         expression.parse(tokens, variable_scope)
-        if expression.get_type() != "INTEGER":
+        if expression.get_type() != IntegerType:
             raise ParseError(f"FOR statement expected INTEGER or REAL, got {expression.get_type()} instead")
         self.components.append(expression)
         token = tokens.popleft() # ToKeyword
@@ -241,7 +234,7 @@ class ForStatement(Statement):
             raise ParseError("Expected ToKeyword")
         expression = LogicalOrExpression() # Expression
         expression.parse(tokens, variable_scope)
-        if expression.get_type() != "INTEGER":
+        if expression.get_type() != IntegerType:
             raise ParseError(f"FOR statement expected INTEGER or REAL, got {expression.get_type()} instead")
         self.components.append(expression)
         next_tok = tokens[0] # might be StepKeyword
@@ -250,7 +243,7 @@ class ForStatement(Statement):
             self.has_step = True
             expression = LogicalOrExpression() # Expression
             expression.parse(tokens, variable_scope)
-            if expression.get_type() != "INTEGER":
+            if expression.get_type() != IntegerType:
                 raise ParseError(f"FOR statement expected INTEGER or REAL, got {expression.get_type()} instead")
             self.step = expression
         scope = Scope()
@@ -354,7 +347,7 @@ class DeclareVariableStatement(Component):
         token = tokens.popleft() # Datatype
         if not isinstance(token, Datatype):
             raise ParseError("Expected Datatype")
-        datatype = token.value
+        datatype = get_type_from_string(token.value)
         variable_scope.add(Variable(identifier, datatype))
 
     def generate_code(self, indents=0):
@@ -386,7 +379,7 @@ class AssignVariableStatement(Component):
         output = "    " * indents
         output += self.identifier.value
         output += "="
-        output += self.variable.datatype
+        output += get_type_string(self.variable.datatype)
         output += "("
         output += self.components[0].generate_code(indents)
         output += ")\n"
@@ -407,7 +400,7 @@ class LogicalOrExpression(Component):
         self.type = logical_and_exp.get_type()
         next_tok = tokens[0]
         while isinstance(next_tok, LogicalOr):
-            if self.type != "BOOLEAN":
+            if self.type != BooleanType:
                 raise ParseError(f"BOOLEAN expected, got {self.type} instead")
             binaryop = BinaryOp() # BinaryOp
             binaryop.parse(tokens, variable_scope)
@@ -415,7 +408,7 @@ class LogicalOrExpression(Component):
             logical_and_exp = LogicalAndExpression() # LogicalAndExpression
             logical_and_exp.parse(tokens, variable_scope)
             self.components.append(logical_and_exp)
-            if logical_and_exp.get_type() != "BOOLEAN":
+            if logical_and_exp.get_type() != BooleanType:
                 raise ParseError(f"BOOLEAN expected, got {self.type} instead")
             next_tok = tokens[0]
     
@@ -450,7 +443,7 @@ class LogicalAndExpression(Component):
         self.type = equality_exp.get_type()
         next_tok = tokens[0]
         while isinstance(next_tok, LogicalAnd):
-            if self.type != "BOOLEAN":
+            if self.type != BooleanType:
                 raise ParseError(f"BOOLEAN expected, got {self.type} instead")
             binaryop = BinaryOp() # BinaryOp
             binaryop.parse(tokens, variable_scope)
@@ -458,7 +451,7 @@ class LogicalAndExpression(Component):
             equality_exp = EqualityExpression() # EqualityExp
             equality_exp.parse(tokens, variable_scope)
             self.components.append(equality_exp)
-            if equality_exp.get_type() != "BOOLEAN":
+            if equality_exp.get_type() != BooleanType:
                 raise ParseError(f"BOOLEAN expected, got {self.type} instead")
             next_tok = tokens[0]
     
@@ -493,7 +486,7 @@ class EqualityExpression(Component):
         self.type = relational_exp.get_type()
         next_tok = tokens[0]
         while contains_instance(next_tok, (Equal, NotEqual)):
-            self.type = "BOOLEAN"
+            self.type = BooleanType
             binaryop = BinaryOp() # BinaryOp
             binaryop.parse(tokens, variable_scope)
             self.components.append(binaryop)
@@ -537,9 +530,9 @@ class RelationalExpression(Component):
         self.type = additive_exp.get_type()
         next_tok = tokens[0]
         if contains_instance(next_tok, (LessThanEqual, MoreThanEqual, MoreThan, LessThan)):
-            if self.type not in ("INTEGER", "REAL"):
+            if self.type not in (IntegerType, RealType):
                 raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
-            self.type = "BOOLEAN"
+            self.type = BooleanType
         while contains_instance(next_tok, (LessThanEqual, MoreThanEqual, MoreThan, LessThan)):
             binaryop = BinaryOp() # BinaryOp
             binaryop.parse(tokens, variable_scope)
@@ -547,7 +540,7 @@ class RelationalExpression(Component):
             additive_exp = AdditiveExpression() # AdditiveExpression
             additive_exp.parse(tokens, variable_scope)
             self.components.append(additive_exp)
-            if additive_exp.get_type() not in ("INTEGER", "REAL"):
+            if additive_exp.get_type() not in (IntegerType, RealType):
                 raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
             next_tok = tokens[0]
     
@@ -597,7 +590,7 @@ class AdditiveExpression(Component):
         if contains_instance(next_tok, (Plus, Minus)):
             self.exprtype = "numeric"
             while contains_instance(next_tok, (Plus, Minus)):
-                if self.type not in ("INTEGER", "REAL"):
+                if self.type not in (IntegerType, RealType):
                     raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
                 binaryop = BinaryOp() # BinaryOp
                 binaryop.parse(tokens, variable_scope)
@@ -605,24 +598,24 @@ class AdditiveExpression(Component):
                 term = Term() # Term
                 term.parse(tokens, variable_scope)
                 self.components.append(term)
-                if term.get_type() not in ("INTEGER", "REAL"):
+                if term.get_type() not in (IntegerType, RealType):
                     raise ParseError(f"INTEGER or REAL expected, got {term.type} instead")
-                if term.get_type() == "REAL":
-                    self.type = "REAL"
+                if term.get_type() == RealType:
+                    self.type = RealType
                 next_tok = tokens[0]
         elif isinstance(next_tok, Ampersand):
             self.exprtype = "string"
-            if self.type not in ("STRING", "CHAR"):
+            if self.type not in (StringType, CharType):
                 raise ParseError(f"STRING or CHAR expected, got {self.type} instead")
             while isinstance(next_tok, Ampersand):
-                self.type = "STRING"
+                self.type = StringType
                 binaryop = BinaryOp() # BinaryOp
                 binaryop.parse(tokens, variable_scope)
                 self.components.append(binaryop)
                 term = Term() # Term
                 term.parse(tokens, variable_scope)
                 self.components.append(term)
-                if term.get_type() not in ("STRING", "CHAR"):
+                if term.get_type() not in (StringType, CharType):
                     raise ParseError(f"STRING or CHAR expected, got {term.type} instead")
                 next_tok = tokens[0]
 
@@ -669,26 +662,26 @@ class Term(Component):
         next_tok = tokens[0]
         while contains_instance(next_tok, (Multiply, Divide, Div, Mod)):
             if contains_instance(next_tok, (Multiply, Divide)):
-                if self.type not in ("INTEGER", "REAL"):
+                if self.type not in (IntegerType, RealType):
                     raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
             else:
-                if self.type not in ("INTEGER"):
+                if self.type not in (IntegerType,):
                     raise ParseError(f"INTEGER or REAL expected, got {self.type} instead")
             binaryop = BinaryOp() # BinaryOp
             binaryop.parse(tokens, variable_scope)
             if binaryop.value == "/":
-                self.type == "REAL"
+                self.type == RealType
             self.components.append(binaryop)
             factor = Factor() # Factor
             factor.parse(tokens, variable_scope)
             self.components.append(factor)
             if binaryop.value in ("/", "*"):
-                if factor.get_type() not in ("INTEGER", "REAL"):
+                if self.type not in (IntegerType, RealType):
                     raise ParseError(f"INTEGER or REAL expected, got {factor.type} instead")
-                if factor.type == "REAL":
-                    self.type = "REAL"
+                if factor.type == RealType:
+                    self.type = RealType
             else:
-                if factor.get_type() != "INTEGER":
+                if factor.get_type() != IntegerType:
                     raise ParseError(f"INTEGER expected, got {factor.type} instead")
             next_tok = tokens[0]
 
@@ -751,10 +744,10 @@ class Factor(Component):
             self.exprtype = "unary_op"
             self.type = factor.get_type()
             if contains_instance(next_tok, (Plus, Minus)):
-                if self.type not in ("INTEGER", "REAL"):
+                if self.type not in (IntegerType, RealType):
                     raise ParseError(f"Expected INTEGER or REAL, got {self.type} instead")
             elif isinstance(next_tok, LogicalNot):
-                if self.type not in ("BOOLEAN"):
+                if self.type not in (BooleanType,):
                     raise ParseError(f"Expected BOOLEAN, got {self.type} instead")
         elif isinstance(next_tok, Identifier):
             self.exprtype = "identifier"
@@ -849,11 +842,11 @@ class LiteralComponent(Component):
     
     def get_type(self):
         type_matchers = {
-            "^[0-9]+$": "INTEGER",
-            "^[0-9]*\.[0-9]+|[0-9]+\.[0-9]*$": "REAL",
-            "^TRUE|FALSE$": "BOOLEAN",
-            "^\"[^\n\"]*\"$": "STRING",
-            "^'.'$": "CHAR"
+            "^[0-9]+$": IntegerType,
+            "^[0-9]*\.[0-9]+|[0-9]+\.[0-9]*$": RealType,
+            "^TRUE|FALSE$": BooleanType,
+            "^\"[^\n\"]*\"$": StringType,
+            "^'.'$": CharType
         }
         for i, j in type_matchers.items():
             if re.search(re.compile(i), self.value):
@@ -866,13 +859,13 @@ class LiteralComponent(Component):
         self.value = token.value
 
     def generate_code(self, indents=0):
-        if self.get_type() not in ("BOOLEAN", "DATE"):
-            output = self.get_type()
+        if self.get_type() not in (BooleanType,):
+            output = get_type_string(self.get_type())
             output += "("
             output += self.value
             output += ")"
             return output
-        elif self.get_type() == "BOOLEAN":
+        elif self.get_type() == BooleanType:
             output = "BOOLEAN("
             output += "True" if self.value == "TRUE" else "False"
             output += ")"
