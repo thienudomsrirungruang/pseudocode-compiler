@@ -1,10 +1,21 @@
 header = \
 """import re
-class _PrimitiveType:
+from functools import reduce
+class _Type:
+    self.value = None
     def strvalue(self):
         pass
     def copy(self):
         pass
+class _PrimitiveType:
+    pass
+class NULL(_PrimitiveType):
+    def __init__(self):
+        self.value = None
+    def copy(self):
+        return NULL()
+    def strvalue(self):
+        return "NULL"
 class INTEGER(_PrimitiveType):
     def __init__(self, value):
         if isinstance(value, _PrimitiveType):
@@ -207,6 +218,29 @@ class BOOLEAN(_PrimitiveType):
         return BOOLEAN(self.value == other.value)
     def not_equals(self, other):
         return BOOLEAN(self.value != other.value)
+class ARRAY(_Type):
+    def __init__(self, datatype, dims):
+        self.datatype = datatype
+        self.dims = dims
+        self.value = generate_array(dims)
+    def generate_array(self, dims):
+        return [NULL() for _ in range(reduce(lambda x, y: x*y, dims))]
+    def copy(self):
+        new_a = ARRAY()
+        new_a.value = deepcopy_array(self.value)
+        return new_a
+    def deepcopy_array(self, value):
+        return [value[_].copy() for _ in range(len(value))]
+    def equiv_index(self, indices):
+        equiv_index = 0
+        for i in range(len(dims) - 1):
+            equiv_index += indices[i] * reduce(lambda x, y: x*y, dims[i+1:])
+        equiv_index += indices[-1]
+        return equiv_index
+    def set_value(self, indices, new_value):
+        self.value[equiv_index(indices)] = new_value
+    def get_value(self, indices):
+        return self.value[equiv_index(indices)]
 def _INPUT(datatype):
     datatype_regexes = {
         "INTEGER": re.compile("^\d*$"),
@@ -237,3 +271,4 @@ def _RANGE(a, b, s=None):
 """
 
 #TODO: DATE
+#TODO: make arrays not start at 0

@@ -3,6 +3,11 @@ from errors import *
 class Type:
     pass
 
+class ArrayType(Type):
+    def __init__(self, part_type, num_dims):
+        self.part_type = part_type
+        self.num_dims = num_dims
+
 class PrimitiveType(Type):
     pass
 
